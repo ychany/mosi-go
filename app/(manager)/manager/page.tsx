@@ -57,7 +57,7 @@ const MAP_MARKERS: MapMarker[] = [
 
 export default function ManagerHome() {
   const [openNote, setOpenNote] = useState<string | null>("e1");
-  // 운영팀이 발송한 배차를 매니저가 수락하기 전/후 (PROTOTYPE_PLAN §1.3 3단계)
+  // 운영팀이 발송한 배차를 매니저가 수락하기 전/후 (PROTOTYPE_PLAN §1.8 3단계)
   const [accepted, setAccepted] = useState(false);
   const current = elderById("e1");
 

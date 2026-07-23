@@ -33,7 +33,7 @@ import {
 /**
  * 배차 관제 — 모니터링 전용 화면. 교통 공백의 해소 (PROTOTYPE_PLAN §6.1)
  *
- * **사람이 배차를 실행하지 않는다** (§1.3). AI가 새벽 05:00에 배차를 수립해
+ * **사람이 배차를 실행하지 않는다** (§1.8). AI가 새벽 05:00에 배차를 수립해
  * 매니저에게 자동 발송했고, 이 화면은 그 결과와 운행 진행 상황을 조회한다.
  *
  * 배차 리플레이: 진입 시 새벽에 일어난 클러스터링을 자동 재생한다.
@@ -213,7 +213,7 @@ export default function AdminPage() {
   const scenario = DISPATCH_SCENARIOS[scenarioIdx];
 
   /**
-   * 새벽 배차를 다시 재생한다 — 실행이 아니라 리플레이 (§1.3).
+   * 새벽 배차를 다시 재생한다 — 실행이 아니라 리플레이 (§1.8).
    * 누를 때마다 다음 시나리오로 순환해 "다른 조건으로" 요청에 대응한다.
    */
   function replay() {
@@ -397,7 +397,7 @@ export default function AdminPage() {
             )}
           </div>
 
-          {/* 모니터링 요약 + 리플레이 (실행 버튼 없음 — §1.3) */}
+          {/* 모니터링 요약 + 리플레이 (실행 버튼 없음 — §1.8) */}
           <div className="border-t border-line p-4 space-y-3 bg-card">
             {settled && <EconomicsCard vehicleCount={scenario.vehicles.length} />}
 
@@ -409,7 +409,7 @@ export default function AdminPage() {
                     매니저 3명 전원 수락 · 운행 중
                   </p>
                   <p className="text-[11px] text-sub mt-0.5">
-                    이수진 · 박지훈 · 김도현 — {AUTO_DISPATCH_AT} 자동 발송
+                    이수진 · 박지훈 · 김도현 — {AUTO_DISPATCH_AT} 자동 배차·발송
                   </p>
                 </div>
                 <button
