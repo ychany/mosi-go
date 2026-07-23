@@ -5,6 +5,7 @@ import NaverMap, { type MapMarker, type MapPolyline } from "@/components/NaverMa
 import {
   DISPATCH_SCENARIOS,
   HOSPITALS,
+  INTAKE_FEED,
   LIVE_FEED,
   MAP_CENTER,
   MAP_ZOOM,
@@ -14,6 +15,7 @@ import {
   UNIT_ECONOMICS,
   elderById,
   type Hospital,
+  type Ward,
 } from "@/lib/mock-data";
 
 /**
@@ -82,19 +84,20 @@ function KpiStrip({ phase, vehicleCount }: { phase: Phase; vehicleCount: number 
   );
 }
 
-/** 지도 위 라이브 관제 피드 — 3초 간격 롤링 (연출) */
-function LiveFeed() {
+/** 지도 위 라이브 피드 — 3초 간격 롤링 (연출). idle=접수 피드 / done=운행 피드 */
+function LiveFeed({ feed, title }: { feed: typeof LIVE_FEED; title: string }) {
   const [idx, setIdx] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setIdx((i) => (i + 1) % LIVE_FEED.length), 3000);
+    setIdx(0);
+    const t = setInterval(() => setIdx((i) => (i + 1) % feed.length), 3000);
     return () => clearInterval(t);
-  }, []);
-  const visible = [LIVE_FEED[idx], LIVE_FEED[(idx + 1) % LIVE_FEED.length], LIVE_FEED[(idx + 2) % LIVE_FEED.length]];
+  }, [feed]);
+  const visible = [feed[idx], feed[(idx + 1) % feed.length], feed[(idx + 2) % feed.length]];
   return (
     <div className="absolute bottom-4 right-4 w-72 rounded-2xl bg-card/95 shadow-card-md overflow-hidden">
       <header className="flex items-center gap-2 px-4 py-2 bg-primary-light">
         <span className="w-2 h-2 rounded-full bg-red animate-pulse" />
-        <span className="text-[12px] font-bold text-primary-dark">라이브 관제 피드</span>
+        <span className="text-[12px] font-bold text-primary-dark">{title}</span>
       </header>
       <ul className="px-4 py-2.5 space-y-2">
         {visible.map((f) => (
@@ -105,6 +108,38 @@ function LiveFeed() {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+/** 배차 전 지도 위 미배차 수요 현황 — 읍·면별 분포 + 힌트 (idle 전용) */
+function DemandOverlay() {
+  const byWard = new Map<Ward, number>();
+  for (const r of RESERVATIONS) {
+    const w = elderById(r.elderId).ward;
+    byWard.set(w, (byWard.get(w) ?? 0) + 1);
+  }
+  const rows = [...byWard.entries()].sort((a, b) => b[1] - a[1]);
+  const max = Math.max(...rows.map(([, n]) => n));
+  return (
+    <div className="absolute top-4 left-4 w-64 rounded-2xl bg-card/95 shadow-card-md overflow-hidden">
+      <header className="px-4 py-2 bg-[#fff3e0]">
+        <span className="text-[12px] font-bold text-orange">⏳ 미배차 수요 {RESERVATIONS.length}건</span>
+      </header>
+      <div className="px-4 py-3 space-y-1.5">
+        {rows.map(([ward, n]) => (
+          <div key={ward} className="flex items-center gap-2 text-[11px]">
+            <span className="w-11 text-sub shrink-0">{ward}</span>
+            <div className="flex-1 h-2">
+              <div className="h-full rounded-r-sm bg-primary/70" style={{ width: `${(n / max) * 100}%` }} />
+            </div>
+            <span className="tnum font-bold w-6 text-right shrink-0">{n}건</span>
+          </div>
+        ))}
+        <p className="text-[10.5px] text-faint pt-1.5 border-t border-line leading-snug">
+          같은 시간대·같은 방면 수요를 묶으면 차량 수가 줄어듭니다 — [AI 배차 실행]
+        </p>
+      </div>
     </div>
   );
 }
@@ -192,9 +227,14 @@ export default function AdminPage() {
       }
     }
   } else {
+    // 미배차 — 목적지 병원별 색상으로 "아직 묶이지 않은 수요"를 보여준다
     for (const r of filteredReservations) {
       const e = elderById(r.elderId);
-      markers.push({ position: e.coord, color: "#9e9e9e", label: e.name });
+      markers.push({
+        position: e.coord,
+        color: r.hospital === "건국대충주병원" ? "#3ba949" : "#42a5f5",
+        label: e.name,
+      });
     }
   }
 
@@ -323,8 +363,9 @@ export default function AdminPage() {
             <button
               onClick={dispatch}
               disabled={phase === "running"}
-              className="w-full h-12 rounded-2xl grad text-white font-bold text-[15px]
-                shadow-[0_4px_16px_rgba(106,179,77,0.35)] hover:brightness-105 active:scale-[.99] transition disabled:opacity-70"
+              className={`w-full h-12 rounded-2xl grad text-white font-bold text-[15px]
+                shadow-[0_4px_16px_rgba(106,179,77,0.35)] hover:brightness-105 active:scale-[.99] transition disabled:opacity-70
+                ${phase === "idle" ? "animate-[btnpulse_2.2s_ease-in-out_infinite]" : ""}`}
             >
               {phase === "running" ? (
                 <span className="inline-flex items-center gap-2.5">
@@ -349,7 +390,7 @@ export default function AdminPage() {
             polylines={polylines}
             className="absolute inset-0"
           />
-          {phase === "done" && (
+          {phase === "done" ? (
             <>
               <div className="absolute top-4 left-4 rounded-2xl bg-card/95 shadow-card-md px-4 py-3 text-xs space-y-1.5">
                 {scenario.vehicles.map((v) => (
@@ -362,7 +403,23 @@ export default function AdminPage() {
                   </p>
                 ))}
               </div>
-              <LiveFeed />
+              <LiveFeed feed={LIVE_FEED} title="라이브 관제 피드" />
+            </>
+          ) : (
+            <>
+              <DemandOverlay />
+              <div className="absolute top-4 right-4 rounded-2xl bg-card/95 shadow-card-md px-4 py-2.5 text-xs space-y-1">
+                <p className="text-[11px] font-bold text-sub mb-0.5">목적지</p>
+                <p className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-primary-dark" />
+                  건국대충주병원
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#42a5f5]" />
+                  충주의료원
+                </p>
+              </div>
+              <LiveFeed feed={INTAKE_FEED} title="접수 현황" />
             </>
           )}
         </div>

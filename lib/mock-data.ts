@@ -308,6 +308,16 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
   },
 ];
 
+/** 접수 라이브 피드 — 배차 전(idle) 지도 위 티커에 롤링되는 접수 이벤트 (연출) */
+export const INTAKE_FEED = [
+  { time: "07:12", icon: "🔄", text: "정기 배차 5건 자동 등록 (투석 주3회 스케줄)" },
+  { time: "07:31", icon: "📱", text: "자녀 앱 예약 — 박순덕 어르신 (보호자 박미영)" },
+  { time: "07:44", icon: "📞", text: "전화 접수 — 최복례 어르신 (콜센터 김민지 입력)" },
+  { time: "07:58", icon: "📞", text: "전화 접수 — 정갑수 어르신 (콜센터 김민지 입력)" },
+  { time: "08:03", icon: "📱", text: "자녀 앱 예약 — 한만식 어르신 (보호자 한지원)" },
+  { time: "08:05", icon: "🧑‍⚕️", text: "매니저 3명 배정 대기 — 이수진·박지훈·김도현" },
+];
+
 /** 관제 라이브 피드 — 배차 확정 후 지도 위 티커에 롤링되는 이벤트 (연출) */
 export const LIVE_FEED = [
   { time: "08:10", icon: "🚐", text: "3호차 운행 시작 — 앙성면 방면" },
