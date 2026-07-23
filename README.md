@@ -89,9 +89,7 @@ npm run dev
 
 1. [네이버 클라우드 플랫폼](https://www.ncloud.com) → **Maps** → Application 등록
 2. **API 선택**에서 `Dynamic Map` 체크
-3. **Web 서비스 URL**에 `http://localhost` 등록
-   - ⚠️ **포트를 빼야 한다.** `http://localhost:3000`으로 등록하면 인증이 실패한다
-   - 등록 반영에 몇 분 걸릴 수 있다
+3. **Web 서비스 URL**에 `http://localhost` 등록 (포트 제외)
 4. 발급된 Client ID를 `.env.local`에 기입
 
 ```bash
@@ -99,7 +97,7 @@ cp .env.example .env.local
 # NEXT_PUBLIC_NCP_KEY_ID=발급받은_클라이언트_ID
 ```
 
-배포 시에는 같은 화면에 배포 도메인(`https://<프로젝트>.vercel.app`)을 추가 등록하고, Vercel 환경변수에 같은 키를 넣은 뒤 **재배포**해야 한다 (`NEXT_PUBLIC_` 변수는 빌드 시점에 번들로 들어간다).
+배포 시에는 배포 도메인(`https://<프로젝트>.vercel.app`)을 Web 서비스 URL에 추가하고, Vercel 환경변수에 같은 키를 등록한 뒤 재배포한다.
 
 ---
 
