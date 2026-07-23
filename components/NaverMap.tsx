@@ -81,8 +81,8 @@ function tryLoad(param: "ncpClientId" | "ncpKeyId"): Promise<boolean> {
     const s = document.createElement("script");
     s.dataset.naverParam = param;
     s.src = `https://oapi.map.naver.com/openapi/v3/maps.js?${param}=${KEY}`;
-    // 인증 실패 콜백은 로드 직후 비동기로 올 수 있어 잠깐 기다린 뒤 판정
-    s.onload = () => setTimeout(() => done(!!window.naver?.maps), 400);
+    // 인증 실패 콜백은 로드 후 인증 요청이 끝나야 오므로 충분히 기다린 뒤 판정
+    s.onload = () => setTimeout(() => done(!!window.naver?.maps), 1500);
     s.onerror = () => done(false); // 오프라인 등 — 플레이스홀더로 degradation
     document.head.appendChild(s);
   });
