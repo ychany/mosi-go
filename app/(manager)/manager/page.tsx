@@ -5,7 +5,9 @@ import Link from "next/link";
 import NaverMap, { type MapMarker } from "@/components/NaverMap";
 import {
   BusFront,
+  Check,
   ChevronRight,
+  Inbox,
   ICON_MAP,
   MARKER_HOSPITAL,
   Navigation,
@@ -16,6 +18,7 @@ import {
 import {
   DISPATCH_SCENARIOS,
   HOSPITALS,
+  MANAGER_ASSIGNMENT,
   MANAGER_NOTICES,
   RESERVATIONS,
   TODAY,
@@ -54,6 +57,8 @@ const MAP_MARKERS: MapMarker[] = [
 
 export default function ManagerHome() {
   const [openNote, setOpenNote] = useState<string | null>("e1");
+  // 운영팀이 발송한 배차를 매니저가 수락하기 전/후 (PROTOTYPE_PLAN §1.3 3단계)
+  const [accepted, setAccepted] = useState(false);
   const current = elderById("e1");
 
   return (
@@ -68,9 +73,12 @@ export default function ManagerHome() {
         <p className="text-[13px] font-medium opacity-90">{TODAY} · {RUN.vehicle}</p>
         <p className="text-[2rem] font-extrabold tracking-tight">3인 합승 동행</p>
         <div className="flex items-center gap-2 mt-3 text-[13px] opacity-90">
-          <span>1/3 진행</span>
+          <span>{accepted ? "1/3 진행" : "수락 대기"}</span>
           <div className="flex-1 h-1 bg-white/30 rounded overflow-hidden">
-            <div className="h-full bg-white rounded" style={{ width: "33%" }} />
+            <div
+              className="h-full bg-white rounded transition-all duration-500"
+              style={{ width: accepted ? "33%" : "0%" }}
+            />
           </div>
         </div>
         <p className="tnum text-[11px] opacity-80 mt-1.5">
@@ -78,8 +86,35 @@ export default function ManagerHome() {
         </p>
       </section>
 
+      {/* 배차 수락 — 운영팀이 발송한 오늘 배차 */}
+      {!accepted && (
+        <section className="bg-card mx-4 mt-4 rounded-2xl shadow-card-md ring-2 ring-orange px-5 py-4 animate-[rise_.45s_ease_both]">
+          <p className="text-[11px] font-bold text-orange tracking-wider mb-1.5 flex items-center gap-1.5">
+            <Inbox size={13} />
+            새 배차 도착
+          </p>
+          <p className="text-[15px] font-bold">오늘 동행 3건이 배정되었습니다</p>
+          <p className="text-xs text-sub mt-0.5">
+            {MANAGER_ASSIGNMENT.from} · {MANAGER_ASSIGNMENT.assignedAt} 발송
+          </p>
+          <p className="text-[11px] text-faint mt-1">{MANAGER_ASSIGNMENT.note}</p>
+          <button
+            onClick={() => setAccepted(true)}
+            className="mt-3 w-full h-12 rounded-xl grad text-white font-bold text-[15px]
+              shadow-[0_4px_16px_rgba(106,179,77,0.35)] active:scale-[.99] transition
+              animate-[btnpulse_2.2s_ease-in-out_infinite]"
+          >
+            <span className="inline-flex items-center gap-2">
+              <Check size={17} strokeWidth={3} />
+              배차 수락하고 동행 시작
+            </span>
+          </button>
+        </section>
+      )}
+
       {/* 지금 할 일 */}
-      <section className="bg-card mx-4 mt-4 rounded-2xl shadow-card-md ring-2 ring-primary px-5 py-4">
+      {accepted && (
+      <section className="bg-card mx-4 mt-4 rounded-2xl shadow-card-md ring-2 ring-primary px-5 py-4 animate-[rise_.45s_ease_both]">
         <p className="text-[11px] font-bold text-primary-dark tracking-wider mb-1.5">지금 할 일</p>
         <div className="flex items-center gap-3">
           <div className="grad w-11 h-11 rounded-xl grid place-items-center text-white text-[15px] font-extrabold shrink-0">
@@ -106,6 +141,7 @@ export default function ManagerHome() {
           동행 체크리스트 시작 →
         </Link>
       </section>
+      )}
 
       {/* 오늘 경로 */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2">

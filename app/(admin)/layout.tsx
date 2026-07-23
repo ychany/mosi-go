@@ -22,7 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
           <span className="ml-auto text-sm text-white/90 flex items-center gap-1.5">
             <User size={16} />
-            충주시 · 운영팀
+            모시GO 운영팀 · 충주
           </span>
         </div>
       </header>

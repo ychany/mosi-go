@@ -3,15 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import NaverMap, { type MapMarker, type MapPolyline } from "@/components/NaverMap";
 import {
+  Check,
   Clock,
   Hourglass,
   ICON_MAP,
   MARKER_HOSPITAL,
   MARKER_VEHICLE,
+  Send,
   Stethoscope,
   UserRound,
 } from "@/components/icons";
 import {
+  AUTO_DISPATCH_AT,
   DISPATCH_SCENARIOS,
   HOSPITALS,
   INTAKE_FEED,
@@ -30,21 +33,24 @@ import {
 /**
  * 배차 관제 — 데모의 하이라이트. 교통 공백의 해소 (PROTOTYPE_PLAN §6.1)
  *
- * idle    개별 예약 8건 + 흩어진 자택 마커
- * running "클러스터링 중…" 연출 1.5초
- * done    차량 3대 카드(픽업 순번·매니저·소요·좌석) + 노선 3개 + 단위경제 비교
- *         + 지도 위 라이브 관제 피드 티커
+ * 화면의 주체는 지자체가 아니라 **모시GO 운영팀**이다 (§1.3).
+ * AI가 새벽에 자동 수립한 배차를 운영팀이 감독·확정해 매니저에게 발송한다.
  *
- * 재실행 시 시나리오 순환 — 심사위원의 "다른 조건으로 다시" 요청 대응.
+ * idle    AI 배차 결과 대기 — 미배차 예약 8건 + 흩어진 자택 마커
+ * running "AI 배차 결과 불러오는 중…" 1.5초
+ * done    차량 3대 카드(픽업 순번·매니저·소요·좌석) + 노선 3개 + 단위경제 비교
+ * sent    매니저 발송 완료 — 라이브 관제 피드 시작
+ *
+ * 재검토 시 시나리오 순환 — 심사위원의 "다른 조건으로 다시" 요청 대응.
  */
 
-type Phase = "idle" | "running" | "done";
+type Phase = "idle" | "running" | "done" | "sent";
 type HospitalFilter = "전체" | Hospital;
 
 const RUNNING_STEPS = [
-  "예약 시간대 ±40분 그룹핑…",
-  "출발지 좌표 방면 클러스터링…",
-  "차량 정원 배정 및 경로 산출…",
+  "AI 배차 결과 불러오는 중…",
+  "취소·추가 예약 반영 중…",
+  "매니저 가용 인원 대조 중…",
 ];
 
 const FILTERS: HospitalFilter[] = ["전체", "건국대충주병원", "충주의료원"];
@@ -61,22 +67,26 @@ const HOSPITAL_MARKERS: MapMarker[] = (
 
 /** 상단 KPI 스트립 — 배차 전후로 값이 바뀐다 */
 function KpiStrip({ phase, vehicleCount }: { phase: Phase; vehicleCount: number }) {
-  const done = phase === "done";
+  const done = phase === "done" || phase === "sent";
   const kpis = [
     { label: "오늘 예약", value: `${RESERVATIONS.length}건`, sub: "정기 5 · 앱 2 · 전화 1" },
     {
       label: "운행 차량",
       value: done ? `${vehicleCount}대` : "—",
-      sub: done ? `1:1 대비 −${UNIT_ECONOMICS.soloVehiclesNeeded - vehicleCount}대` : "배차 대기",
+      sub: done ? `1:1 대비 −${UNIT_ECONOMICS.soloVehiclesNeeded - vehicleCount}대` : "AI 배차 대기",
       highlight: done,
     },
     {
       label: "운행당 마진",
       value: done ? "+1.3만" : "—",
-      sub: done ? "3인 합승 기준" : "배차 후 산출",
+      sub: done ? "3인 합승 기준" : "확정 후 산출",
       highlight: done,
     },
-    { label: "매니저 가동", value: done ? "3명" : "0명", sub: "충주 북부권 대기 5명" },
+    {
+      label: "매니저 배정",
+      value: phase === "sent" ? "3명 수락 대기" : done ? "3명" : "0명",
+      sub: "충주 북부권 대기 5명",
+    },
   ];
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-5 py-4 bg-bg border-b border-line">
@@ -152,7 +162,7 @@ function DemandOverlay() {
           </div>
         ))}
         <p className="text-[10.5px] text-faint pt-1.5 border-t border-line leading-snug">
-          같은 시간대·같은 방면 수요를 묶으면 차량 수가 줄어듭니다 — [AI 배차 실행]
+          AI가 새벽 05:00에 수립한 배차 결과를 불러와 검토합니다
         </p>
       </div>
     </div>
@@ -212,6 +222,11 @@ export default function AdminPage() {
     setPhase("running");
   }
 
+  /** 운영팀이 AI 배차를 확정해 매니저에게 발송 (§1.3 2단계) */
+  function confirmDispatch() {
+    setPhase("sent");
+  }
+
   // running 연출: 단계 메시지 500ms 간격 → 1.6초 후 완료
   useEffect(() => {
     if (phase !== "running") return;
@@ -231,7 +246,9 @@ export default function AdminPage() {
   const markers: MapMarker[] = [...HOSPITAL_MARKERS];
   const polylines: MapPolyline[] = [];
 
-  if (phase === "done") {
+  const settled = phase === "done" || phase === "sent";
+
+  if (settled) {
     for (const v of filteredVehicles) {
       const color = ROUTE_COLORS[v.colorVar];
       polylines.push({ path: v.path, color });
@@ -263,11 +280,13 @@ export default function AdminPage() {
         {/* ── 좌측 패널 ── */}
         <aside className="w-full lg:w-110 shrink-0 flex flex-col bg-card border-r border-line flex-1 lg:flex-none min-h-0">
           <div className="px-5 pt-4 pb-3 border-b border-line">
-            <p className="text-xs text-sub">{TODAY}</p>
+            <p className="text-xs text-sub">
+              {TODAY} · AI 배차 수립 {AUTO_DISPATCH_AT}
+            </p>
             <div className="flex items-baseline justify-between mb-2.5">
               <h1 className="font-extrabold text-lg">오늘의 통원 예약</h1>
               <span className="tnum text-sm text-sub">
-                {phase === "done"
+                {settled
                   ? `${activeElderCount}건 · ${scenario.vehicles.length}대`
                   : `${RESERVATIONS.length}건 · 미배차`}
               </span>
@@ -291,7 +310,7 @@ export default function AdminPage() {
 
           {/* 예약/배차 리스트 */}
           <div className="flex-1 overflow-y-auto px-4 py-4 bg-bg">
-            {phase === "done" ? (
+            {settled ? (
               <div key={`${scenario.id}-${filter}`} className="space-y-4">
                 <p className="text-xs text-sub -mb-1">{scenario.note}</p>
                 {filteredVehicles.map((v, vi) => (
@@ -378,27 +397,52 @@ export default function AdminPage() {
             )}
           </div>
 
-          {/* 실행 버튼 + 단위경제 */}
+          {/* 감독·확정 영역 + 단위경제 */}
           <div className="border-t border-line p-4 space-y-3 bg-card">
-            {phase === "done" && <EconomicsCard vehicleCount={scenario.vehicles.length} />}
-            <button
-              onClick={dispatch}
-              disabled={phase === "running"}
-              className={`w-full h-12 rounded-2xl grad text-white font-bold text-[15px]
-                shadow-[0_4px_16px_rgba(106,179,77,0.35)] hover:brightness-105 active:scale-[.99] transition disabled:opacity-70
-                ${phase === "idle" ? "animate-[btnpulse_2.2s_ease-in-out_infinite]" : ""}`}
-            >
-              {phase === "running" ? (
-                <span className="inline-flex items-center gap-2.5">
-                  <span className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                  {RUNNING_STEPS[runStep]}
-                </span>
-              ) : phase === "done" ? (
-                "AI 배차 다시 실행"
-              ) : (
-                "AI 배차 실행"
-              )}
-            </button>
+            {settled && <EconomicsCard vehicleCount={scenario.vehicles.length} />}
+
+            {phase === "sent" ? (
+              <>
+                <div className="rounded-2xl bg-primary-light px-4 py-3 animate-[rise_.4s_ease_both]">
+                  <p className="text-[13px] font-bold text-primary-dark flex items-center gap-1.5">
+                    <Check size={15} strokeWidth={3} />
+                    매니저 3명에게 배차 발송 완료
+                  </p>
+                  <p className="text-[11px] text-sub mt-0.5">
+                    이수진 · 박지훈 · 김도현 — 각 매니저 앱에서 수락 대기 중
+                  </p>
+                </div>
+                <button
+                  onClick={dispatch}
+                  className="w-full h-11 rounded-2xl bg-card border border-line text-sub font-bold text-[14px]
+                    hover:border-primary/50 active:scale-[.99] transition"
+                >
+                  다른 조건으로 재검토
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={phase === "done" ? confirmDispatch : dispatch}
+                disabled={phase === "running"}
+                className={`w-full h-12 rounded-2xl grad text-white font-bold text-[15px]
+                  shadow-[0_4px_16px_rgba(106,179,77,0.35)] hover:brightness-105 active:scale-[.99] transition disabled:opacity-70
+                  ${phase === "idle" ? "animate-[btnpulse_2.2s_ease-in-out_infinite]" : ""}`}
+              >
+                {phase === "running" ? (
+                  <span className="inline-flex items-center gap-2.5">
+                    <span className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                    {RUNNING_STEPS[runStep]}
+                  </span>
+                ) : phase === "done" ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Send size={17} />
+                    배차 확정 · 매니저에게 발송
+                  </span>
+                ) : (
+                  "AI 배차 결과 검토"
+                )}
+              </button>
+            )}
           </div>
         </aside>
 
@@ -411,7 +455,7 @@ export default function AdminPage() {
             polylines={polylines}
             className="absolute inset-0"
           />
-          {phase === "done" ? (
+          {settled ? (
             <>
               <div className="absolute top-4 left-4 rounded-2xl bg-card/95 shadow-card-md px-4 py-3 text-xs space-y-1.5">
                 {scenario.vehicles.map((v) => (

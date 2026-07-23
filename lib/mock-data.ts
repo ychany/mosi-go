@@ -164,6 +164,12 @@ export const RESERVATIONS: Reservation[] = [
   { id: "r8", elderId: "e8", hospital: "건국대충주병원", department: "재활의학과", time: "10:00", via: "정기 배차" },
 ];
 
+/**
+ * 배차 수립 시각 — AI 엔진이 새벽에 자동으로 짜둔 시점. (PROTOTYPE_PLAN §1.3)
+ * 관제 화면은 이 결과를 "만드는" 게 아니라 "감독·확정"한다.
+ */
+export const AUTO_DISPATCH_AT = "오늘 05:00";
+
 // ───────────────────────────── 배차 시나리오 ─────────────────────────────
 //
 // [AI 배차 실행] 버튼은 아래 시나리오를 순환 출력한다. (PROTOTYPE_PLAN §5.1)
@@ -317,6 +323,13 @@ export const INTAKE_FEED = [
   { time: "08:03", icon: "app", text: "자녀 앱 예약 — 한만식 어르신 (보호자 한지원)" },
   { time: "08:05", icon: "manager", text: "매니저 3명 배정 대기 — 이수진·박지훈·김도현" },
 ];
+
+/** 매니저 앱에 도착한 오늘 배차 — 수락 전 상태 (PROTOTYPE_PLAN §1.3 3단계) */
+export const MANAGER_ASSIGNMENT = {
+  assignedAt: "오늘 06:12",
+  from: "모시GO 운영팀",
+  note: "AI 자동 배차 · 운영팀 확정 완료",
+};
 
 /** 관제 라이브 피드 — 배차 확정 후 지도 위 티커에 롤링되는 이벤트 (연출) */
 export const LIVE_FEED = [

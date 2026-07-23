@@ -31,7 +31,9 @@ export {
   FileText,
   Mic,
   Bell,
+  Inbox,
   Share2,
+  Send,
   // 일정·상태
   Calendar,
   CalendarCheck,
