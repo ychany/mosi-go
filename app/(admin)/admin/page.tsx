@@ -357,6 +357,9 @@ export default function AdminPage() {
                         <Clock size={13} />
                         {v.durationMin}분 · {v.distanceKm}km
                       </span>
+                      <span className="text-[10.5px] font-bold text-primary-dark bg-primary-light rounded-full px-2 py-0.5">
+                        병원 대기
+                      </span>
                       <span className="ml-auto tnum font-semibold text-primary-dark">
                         좌석 {v.elderIds.length}/{v.seats}
                       </span>

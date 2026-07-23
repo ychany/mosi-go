@@ -371,7 +371,7 @@ export const REPORT_TEXT = `[${TODAY} · 김영자 어르신 통원 리포트]
 
 ■ 운행 확인 (기사 앱 체크)
 09:20 자택 앞 탑승 · 09:45 병원 정문 하차
-12:30 귀가 차량 배차 · 12:40 자택 앞 귀가 — 안전 귀가 확인 완료
+12:30 귀가 탑승 (병원 대기 차량) · 12:40 자택 앞 귀가 — 안전 귀가 확인 완료
 
 ■ 귀가 확인 통화 (12:45)
 어르신께 직접 통화로 확인했습니다.
@@ -409,7 +409,7 @@ export const REPORT_DETAIL = {
   timeline: [
     { time: "09:20", label: "자택 앞 탑승", note: "1호차 · 기사 확인", source: "기사 체크" },
     { time: "09:45", label: "병원 정문 하차", note: "건국대충주병원", source: "기사 체크" },
-    { time: "12:30", label: "귀가 차량 배차", note: "진료 종료 연락 접수", source: "관리자" },
+    { time: "12:30", label: "귀가 탑승", note: "병원 대기 차량 5분 내 탑승", source: "기사 체크" },
     { time: "12:40", label: "자택 앞 귀가", note: "기사 확인", source: "기사 체크" },
     { time: "12:45", label: "귀가 확인 통화", note: "어르신과 직접 통화", source: "관리자" },
   ],
@@ -446,18 +446,25 @@ export const CALL_TRANSCRIPT = [
 export const GUARDIAN_ELDER_ID = "e1"; // 자녀 화면의 주인공: 김영자 어르신 (보호자 김성호)
 
 export interface TrackPhase {
-  label: "픽업 완료" | "이동 중" | "병원 도착" | "진료 중" | "귀가 중";
+  label: "이동 중" | "병원 도착" | "진료 중" | "귀가 중";
   /** 이 단계가 시작되는 경로 인덱스 */
   fromIndex: number;
+  /** 자녀 화면에 노출할 부가 설명 */
+  note: string;
 }
 
 export const TRACK = {
   /** 1호차 경로 재사용 — 자택 → 건대충주병원 */
   path: DISPATCH_SCENARIOS[0].vehicles[0].path,
+  /**
+   * 4단계 — 차량이 병원에 상주하므로 '진료 중'에도 차가 대기한다 (§1.12).
+   * 어르신이 재호출할 필요가 없다는 것이 콜버스와의 결정적 차이다.
+   */
   phases: [
-    { label: "픽업 완료", fromIndex: 0 },
-    { label: "이동 중", fromIndex: 1 },
-    { label: "병원 도착", fromIndex: 7 },
+    { label: "이동 중", fromIndex: 0, note: "1호차 · 3인 합승 운행" },
+    { label: "병원 도착", fromIndex: 7, note: "정문 하차 · 접수 진행" },
+    { label: "진료 중", fromIndex: 8, note: "차량이 병원 주차장에서 대기 중" },
+    { label: "귀가 중", fromIndex: 9, note: "진료 종료 5분 내 탑승 완료" },
   ] satisfies TrackPhase[],
   vehicle: "1호차",
   driver: "이수진 기사",

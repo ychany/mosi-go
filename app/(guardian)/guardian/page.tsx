@@ -12,21 +12,26 @@ import { GUARDIAN_ELDER_ID, HOSPITALS, TRACK, elderById } from "@/lib/mock-data"
  */
 
 const elder = elderById(GUARDIAN_ELDER_ID);
-const STATUS_FLOW = ["픽업 완료", "이동 중", "병원 도착"] as const;
+const PHASES = TRACK.phases;
+/** 경로 주행이 끝난 뒤에도 진료 중·귀가 중 단계가 이어진다 (§1.12) */
+const LAST_PATH_IDX = TRACK.path.length - 1;
 
 export default function GuardianHome() {
-  const [posIdx, setPosIdx] = useState(0);
+  // tick: 0..LAST_PATH_IDX 는 주행, 이후 +1 진료 중, +2 귀가 중
+  const [tick, setTick] = useState(0);
+  const MAX_TICK = LAST_PATH_IDX + 2;
 
   useEffect(() => {
-    const t = setInterval(() => {
-      setPosIdx((i) => Math.min(i + 1, TRACK.path.length - 1));
-    }, 2000);
+    const t = setInterval(() => setTick((i) => Math.min(i + 1, MAX_TICK)), 2000);
     return () => clearInterval(t);
-  }, []);
+  }, [MAX_TICK]);
 
-  const arrived = posIdx >= TRACK.path.length - 1;
-  const status = arrived ? "병원 도착" : posIdx === 0 ? "픽업 완료" : "이동 중";
-  const progress = Math.round((posIdx / (TRACK.path.length - 1)) * 100);
+  const posIdx = Math.min(tick, LAST_PATH_IDX);
+  const phaseIdx =
+    tick >= LAST_PATH_IDX + 2 ? 3 : tick >= LAST_PATH_IDX + 1 ? 2 : tick >= LAST_PATH_IDX ? 1 : 0;
+  const phase = PHASES[phaseIdx];
+  const atHospital = phaseIdx >= 1;
+  const progress = Math.round((tick / MAX_TICK) * 100);
 
   const markers: MapMarker[] = [
     { position: TRACK.path[0], color: "#9e9e9e", label: "자택" },
@@ -48,9 +53,9 @@ export default function GuardianHome() {
       {/* 히어로 카드 — 오늘 동행 현황 */}
       <section className="grad hero-deco text-white mx-4 mt-4 p-6 rounded-2xl shadow-[0_4px_16px_rgba(106,179,77,0.3)]">
         <p className="text-[13px] font-medium opacity-90">오늘 동행 · 어머니 {elder.name}</p>
-        <p className="text-[2rem] font-extrabold tracking-tight leading-snug">{status}</p>
+        <p className="text-[2rem] font-extrabold tracking-tight leading-snug">{phase.label}</p>
         <div className="flex items-center gap-2 mt-3 text-[13px] opacity-90">
-          <span>{arrived ? "접수 진행 중" : TRACK.etaText}</span>
+          <span>{phaseIdx === 0 ? TRACK.etaText : phase.note}</span>
           <div className="flex-1 h-1 bg-white/30 rounded overflow-hidden">
             <div className="h-full bg-white rounded transition-all duration-700" style={{ width: `${progress}%` }} />
           </div>
@@ -60,7 +65,27 @@ export default function GuardianHome() {
         </p>
       </section>
 
-      {/* 담당 매니저 카드 */}
+      {/* 4단계 진행 스트립 — 차량이 병원에 상주한다 (§1.12) */}
+      <div className="flex items-center px-5 py-3 mx-4 mt-4 bg-card rounded-2xl shadow-card">
+        {PHASES.map((p, i) => {
+          const reached = phaseIdx >= i;
+          return (
+            <div key={p.label} className="flex items-center flex-1 last:flex-none">
+              <span
+                className={`text-[11.5px] whitespace-nowrap font-bold px-2 py-1 rounded-full
+                  ${phaseIdx === i ? "bg-orange text-white" : reached ? "text-primary-dark" : "text-faint"}`}
+              >
+                {p.label}
+              </span>
+              {i < PHASES.length - 1 && (
+                <span className={`flex-1 h-0.5 mx-1 rounded ${reached ? "bg-primary" : "bg-line"}`} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 담당 기사 카드 */}
       <section className="bg-card mx-4 mt-4 px-5 py-4 rounded-2xl shadow-card flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 bg-primary-light rounded-xl grid place-items-center text-primary-dark"><Stethoscope size={22} /></div>
@@ -70,17 +95,29 @@ export default function GuardianHome() {
           </div>
         </div>
         <span
-          className={`text-[12px] font-bold px-3 py-1.5 rounded-full
-            ${arrived ? "bg-primary-light text-primary-dark" : "bg-[#fff3e0] text-orange"}`}
+          className={`text-[12px] font-bold px-3 py-1.5 rounded-full shrink-0
+            ${atHospital ? "bg-primary-light text-primary-dark" : "bg-[#fff3e0] text-orange"}`}
         >
-          {status}
+          {phase.label}
         </span>
       </section>
+
+      {/* 차량 병원 대기 안내 — 재호출이 필요 없다는 것이 핵심 (§1.12) */}
+      {phaseIdx === 2 && (
+        <div className="mx-4 mt-3 rounded-2xl bg-primary-light px-4 py-3 flex items-start gap-2.5 animate-[rise_.4s_ease_both]">
+          <BusFront size={16} className="shrink-0 mt-0.5 text-primary-dark" />
+          <p className="text-[12.5px] leading-snug">
+            <b className="text-primary-dark">차량이 병원에서 대기 중입니다.</b>
+            <br />
+            진료가 끝나면 5분 내 탑승합니다 — 따로 부르실 필요 없습니다.
+          </p>
+        </div>
+      )}
 
       {/* 실시간 지도 */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2">
         <h2 className="text-base font-bold">실시간 위치</h2>
-        <span className="text-[12px] text-sub tnum">{progress}% 이동</span>
+        <span className="text-[12px] text-sub tnum">{progress}% 진행</span>
       </div>
       <div className="mx-4 rounded-2xl overflow-hidden shadow-card">
         <NaverMap

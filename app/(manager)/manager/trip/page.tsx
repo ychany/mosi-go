@@ -37,7 +37,7 @@ const elder = elderById(GUARDIAN_ELDER_ID);
 const DRIVER_CHECKS = [
   { time: "09:20", label: "자택 앞 탑승", note: `${TRACK.vehicle} · ${TRACK.driver}`, done: true },
   { time: "09:45", label: "병원 정문 하차", note: "건국대충주병원", done: true },
-  { time: "12:30", label: "귀가 차량 배차", note: "진료 종료 연락 접수", done: true },
+  { time: "12:30", label: "귀가 탑승", note: "진료 종료 연락 → 병원 대기 차량 5분 내 탑승", done: true },
   { time: "12:40", label: "자택 앞 귀가", note: "기사 확인 완료", done: true },
 ];
 
@@ -138,7 +138,7 @@ export default function TripDetailPage() {
           ))}
         </div>
         <p className="text-[11px] text-faint mt-1 pt-3 border-t border-line leading-snug">
-          기사는 승하차만 확인합니다. 병원 안에는 들어가지 않습니다.
+          차량은 오전 등원 후 병원에 상주합니다 — 어르신이 재호출할 필요가 없습니다.
         </p>
       </section>
 
