@@ -437,6 +437,27 @@ export const DASHBOARD = {
     { label: "누적 운행", value: "1,284건", sub: "파일럿 개시 후 7개월" },
     { label: "이동 취약지 커버율", value: "72%", sub: "북부 5개 읍·면 기준" },
     { label: "평균 대기시간 단축", value: "-38분", sub: "버스 환승 대비" },
+    { label: "병원 노쇼 감소", value: "-63%", sub: "정기 통원 환자 기준" },
+  ],
+  /** 질환별 이용 구성 (%) — 스택 바 */
+  conditionMix: [
+    { label: "혈액투석", pct: 42, color: "#3ba949" },
+    { label: "재활치료", pct: 31, color: "#42a5f5" },
+    { label: "만성질환 진료", pct: 27, color: "#ffa726" },
+  ],
+  /** 바우처 예산 집행 현황 — 지자체 이동지원 예산 */
+  budget: {
+    total: "1.2억 원",
+    spent: "7,420만 원",
+    pct: 61,
+    perTrip: "3.5만 원",
+    note: "2026년 교통약자 이동지원 바우처 · 건당 정산",
+  },
+  /** 사회적 성과 — B2G 심사 포인트 */
+  social: [
+    { icon: "🏥", value: "12명", label: "치료 중단 위기 어르신의 통원 재개", sub: "투석 7 · 재활 5" },
+    { icon: "🧑‍⚕️", value: "10명", label: "지역 일자리 창출 (동행매니저)", sub: "청년 6 · 경력단절여성 4" },
+    { icon: "💬", value: "4.8점", label: "보호자 만족도 (5점 만점)", sub: "리포트 수신 자녀 설문" },
   ],
   /** 월별 운행 추이 */
   monthly: [
