@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import NaverMap, { type MapMarker } from "@/components/NaverMap";
+import { BusFront, Calendar, ChevronRight, MARKER_HOSPITAL, MARKER_VEHICLE, Stethoscope, User } from "@/components/icons";
 import { GUARDIAN_ELDER_ID, HOSPITALS, TRACK, elderById } from "@/lib/mock-data";
 
 /**
@@ -29,8 +30,8 @@ export default function GuardianHome() {
 
   const markers: MapMarker[] = [
     { position: TRACK.path[0], color: "#9e9e9e", label: "자택" },
-    { position: HOSPITALS.건국대충주병원.coord, color: "#212121", label: "건국대충주병원", major: true, glyph: "＋" },
-    { position: TRACK.path[posIdx], color: "#ffa726", major: true, glyph: "🚐", label: TRACK.vehicle },
+    { position: HOSPITALS.건국대충주병원.coord, color: "#212121", label: "건국대충주병원", major: true, glyph: MARKER_HOSPITAL },
+    { position: TRACK.path[posIdx], color: "#ffa726", major: true, glyph: MARKER_VEHICLE, label: TRACK.vehicle },
   ];
 
   return (
@@ -38,9 +39,10 @@ export default function GuardianHome() {
       {/* 그라데이션 헤더 */}
       <header className="grad text-white px-5 h-16 flex items-center justify-between sticky top-0 z-40">
         <span className="font-extrabold text-lg flex items-center gap-2">
-          🚐 모시GO
+          <BusFront size={22} />
+          모시GO
         </span>
-        <span className="text-sm text-white/90">👤 {elder.guardian.name} 님</span>
+        <span className="text-sm text-white/90 flex items-center gap-1.5"><User size={16} />{elder.guardian.name} 님</span>
       </header>
 
       {/* 히어로 카드 — 오늘 동행 현황 */}
@@ -61,7 +63,7 @@ export default function GuardianHome() {
       {/* 담당 매니저 카드 */}
       <section className="bg-card mx-4 mt-4 px-5 py-4 rounded-2xl shadow-card flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-primary-light rounded-xl grid place-items-center text-lg">🧑‍⚕️</div>
+          <div className="w-11 h-11 bg-primary-light rounded-xl grid place-items-center text-primary-dark"><Stethoscope size={22} /></div>
           <div>
             <p className="text-[15px] font-bold">{TRACK.manager}</p>
             <p className="text-xs text-sub mt-0.5">{TRACK.vehicle} · 3인 합승 운행</p>
@@ -115,12 +117,12 @@ export default function GuardianHome() {
         href="/guardian/schedule"
         className="bg-card mx-4 mb-5 px-5 py-4 rounded-2xl shadow-card flex items-center gap-3 active:scale-[.99] transition"
       >
-        <div className="w-11 h-11 bg-primary-light rounded-xl grid place-items-center text-lg">📅</div>
+        <div className="w-11 h-11 bg-primary-light rounded-xl grid place-items-center text-primary-dark"><Calendar size={22} /></div>
         <div className="flex-1">
           <p className="text-[15px] font-bold">7월 25일 (토) 09:30</p>
           <p className="text-xs text-sub mt-0.5">건국대충주병원 신장내과 · 정기 배차 자동 등록</p>
         </div>
-        <span className="text-faint">›</span>
+        <ChevronRight size={18} className="text-faint" />
       </Link>
     </div>
   );

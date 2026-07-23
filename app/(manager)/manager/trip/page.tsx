@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Mic, Sparkles, Square, TriangleAlert } from "@/components/icons";
 import {
   GUARDIAN_ELDER_ID,
   REPORT_TEXT,
@@ -87,7 +88,7 @@ export default function TripPage() {
       {/* 케어노트 */}
       <section className="bg-card mx-4 -mt-2.5 rounded-2xl shadow-card-md px-5 py-4 relative z-40">
         <p className="text-[12px] font-bold text-primary-dark mb-2 flex items-center gap-1.5">
-          <span className="w-6 h-6 bg-primary-light rounded-lg grid place-items-center text-[13px]">📌</span>
+          <span className="w-6 h-6 bg-primary-light rounded-lg grid place-items-center text-primary-dark"><TriangleAlert size={13} /></span>
           케어노트
         </p>
         <ul className="space-y-1.5">
@@ -157,7 +158,7 @@ export default function TripPage() {
                   ${memo === "recording" ? "bg-red" : "grad"}`}
                 aria-label={memo === "recording" ? "녹음 종료" : "녹음 시작"}
               >
-                {memo === "recording" ? "■" : "🎙"}
+                <span className="grid place-items-center">{memo === "recording" ? <Square size={20} fill="currentColor" /> : <Mic size={24} />}</span>
               </button>
               <p className="tnum text-sm text-sub mt-2">{memo === "recording" ? mmss : "눌러서 녹음"}</p>
             </div>
@@ -179,7 +180,7 @@ export default function TripPage() {
               </div>
               <div ref={reportRef} className="bg-card rounded-2xl shadow-card overflow-hidden">
                 <header className="px-5 py-3 bg-primary-light">
-                  <p className="text-[12px] font-bold text-primary-dark">✨ AI 정리 리포트 — 자녀 전송용</p>
+                  <p className="text-[12px] font-bold text-primary-dark flex items-center gap-1.5"><Sparkles size={14} />AI 정리 리포트 — 자녀 전송용</p>
                 </header>
                 <pre className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed px-5 py-4">
                   {displayed}

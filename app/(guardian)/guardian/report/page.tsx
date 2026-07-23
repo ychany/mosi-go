@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Calendar, Check, ChevronRight, ClipboardList, ICON_MAP, Sparkles, Tablets, Stethoscope } from "@/components/icons";
 import {
   GUARDIAN_ELDER_ID,
   MONTHLY_CARE,
@@ -19,9 +20,9 @@ import {
 const elder = elderById(GUARDIAN_ELDER_ID);
 
 const PAST_REPORTS = [
-  { date: "7월 21일 (화)", summary: "혈액투석 정기 치료 · 특이사항 없음", chips: ["✅"] },
-  { date: "7월 18일 (토)", summary: "혈액투석 정기 치료 · 다음 회차 혈압 체크 요청", chips: ["✅", "🩺"] },
-  { date: "7월 16일 (목)", summary: "혈액투석 정기 치료 · 대기 중 간식 제공", chips: ["✅"] },
+  { date: "7월 21일 (화)", summary: "혈액투석 정기 치료 · 특이사항 없음", chips: ["check"] },
+  { date: "7월 18일 (토)", summary: "혈액투석 정기 치료 · 다음 회차 혈압 체크 요청", chips: ["check", "manager"] },
+  { date: "7월 16일 (목)", summary: "혈액투석 정기 치료 · 대기 중 간식 제공", chips: ["check"] },
 ];
 
 export default function ReportPage() {
@@ -41,7 +42,7 @@ export default function ReportPage() {
         <article className="bg-card rounded-2xl shadow-card overflow-hidden animate-[rise_.45s_ease_both]">
           <header className="flex items-center justify-between px-5 py-3 bg-primary-light">
             <div>
-              <p className="text-[13px] font-bold text-primary-dark">🆕 오늘 · {TODAY}</p>
+              <p className="text-[13px] font-bold text-primary-dark flex items-center gap-1.5"><Sparkles size={14} />오늘 · {TODAY}</p>
               <p className="text-[11px] text-sub">{r.hospital} · {r.manager} 작성</p>
             </div>
             <button
@@ -49,15 +50,16 @@ export default function ReportPage() {
               className={`text-[12px] font-bold px-3 py-1.5 rounded-full transition active:scale-95
                 ${shared ? "bg-primary text-white" : "bg-card text-primary-dark border border-primary/50"}`}
             >
-              {shared ? "✓ 가족 공유됨" : "가족 공유"}
+              {shared ? <span className="inline-flex items-center gap-1"><Check size={13} strokeWidth={3} />가족 공유됨</span> : "가족 공유"}
             </button>
           </header>
 
           {/* 요약 칩 */}
           <div className="flex flex-wrap gap-1.5 px-5 pt-3.5">
             {r.chips.map((c) => (
-              <span key={c.label} className="text-[12px] font-semibold bg-bg border border-line rounded-full px-2.5 py-1">
-                {c.icon} {c.label}
+              <span key={c.label} className="text-[12px] font-semibold bg-bg border border-line rounded-full px-2.5 py-1 inline-flex items-center gap-1.5">
+                {(() => { const Icon = ICON_MAP[c.icon] ?? Check; return <Icon size={13} className="text-primary-dark" />; })()}
+                {c.label}
               </span>
             ))}
           </div>
@@ -82,7 +84,7 @@ export default function ReportPage() {
 
           {/* 처방 변경 — 강조 + 복약 알림 토글 */}
           <div className="mx-5 mb-3 rounded-xl bg-[#fff3e0] border border-orange/40 px-4 py-3">
-            <p className="text-[12px] font-bold text-orange mb-1">💊 처방 변경</p>
+            <p className="text-[12px] font-bold text-orange mb-1 flex items-center gap-1.5"><Tablets size={14} />처방 변경</p>
             <p className="text-[13px] leading-relaxed mb-2.5">{r.prescription}</p>
             <button
               onClick={() => setAlarmOn((v) => !v)}
@@ -114,12 +116,12 @@ export default function ReportPage() {
             href="/guardian/schedule"
             className="mx-5 mb-4 flex items-center gap-3 rounded-xl border border-line px-4 py-3 active:scale-[.99] transition"
           >
-            <div className="w-10 h-10 bg-primary-light rounded-xl grid place-items-center text-lg shrink-0">📅</div>
+            <div className="w-10 h-10 bg-primary-light rounded-xl grid place-items-center text-primary-dark shrink-0"><Calendar size={20} /></div>
             <div className="flex-1">
               <p className="text-[13px] font-bold tnum">다음 예약 — {r.next.date} {r.next.time}</p>
               <p className="text-[11px] text-sub">{r.next.where} · 정기 배차 자동 등록 완료</p>
             </div>
-            <span className="text-faint">›</span>
+            <ChevronRight size={18} className="text-faint" />
           </Link>
 
           <p className="text-[10.5px] text-faint px-5 pb-4 leading-relaxed">
@@ -141,12 +143,12 @@ export default function ReportPage() {
         <h2 className="text-base font-bold px-1 pt-2">지난 리포트</h2>
         {PAST_REPORTS.map((p) => (
           <div key={p.date} className="bg-card px-5 py-4 rounded-2xl shadow-card flex items-center gap-3">
-            <div className="w-11 h-11 bg-primary-light rounded-xl grid place-items-center text-lg shrink-0">📋</div>
+            <div className="w-11 h-11 bg-primary-light rounded-xl grid place-items-center text-primary-dark shrink-0"><ClipboardList size={22} /></div>
             <div className="flex-1 min-w-0">
               <p className="text-[14px] font-bold">{p.date}</p>
               <p className="text-xs text-sub truncate">{p.summary}</p>
             </div>
-            <span className="text-faint shrink-0">›</span>
+            <ChevronRight size={18} className="text-faint shrink-0" />
           </div>
         ))}
 

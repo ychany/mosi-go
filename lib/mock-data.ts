@@ -310,24 +310,24 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
 
 /** 접수 라이브 피드 — 배차 전(idle) 지도 위 티커에 롤링되는 접수 이벤트 (연출) */
 export const INTAKE_FEED = [
-  { time: "07:12", icon: "🔄", text: "정기 배차 5건 자동 등록 (투석 주3회 스케줄)" },
-  { time: "07:31", icon: "📱", text: "자녀 앱 예약 — 박순덕 어르신 (보호자 박미영)" },
-  { time: "07:44", icon: "📞", text: "전화 접수 — 최복례 어르신 (콜센터 김민지 입력)" },
-  { time: "07:58", icon: "📞", text: "전화 접수 — 정갑수 어르신 (콜센터 김민지 입력)" },
-  { time: "08:03", icon: "📱", text: "자녀 앱 예약 — 한만식 어르신 (보호자 한지원)" },
-  { time: "08:05", icon: "🧑‍⚕️", text: "매니저 3명 배정 대기 — 이수진·박지훈·김도현" },
+  { time: "07:12", icon: "refresh", text: "정기 배차 5건 자동 등록 (투석 주3회 스케줄)" },
+  { time: "07:31", icon: "app", text: "자녀 앱 예약 — 박순덕 어르신 (보호자 박미영)" },
+  { time: "07:44", icon: "phone", text: "전화 접수 — 최복례 어르신 (콜센터 김민지 입력)" },
+  { time: "07:58", icon: "phone", text: "전화 접수 — 정갑수 어르신 (콜센터 김민지 입력)" },
+  { time: "08:03", icon: "app", text: "자녀 앱 예약 — 한만식 어르신 (보호자 한지원)" },
+  { time: "08:05", icon: "manager", text: "매니저 3명 배정 대기 — 이수진·박지훈·김도현" },
 ];
 
 /** 관제 라이브 피드 — 배차 확정 후 지도 위 티커에 롤링되는 이벤트 (연출) */
 export const LIVE_FEED = [
-  { time: "08:10", icon: "🚐", text: "3호차 운행 시작 — 앙성면 방면" },
-  { time: "08:14", icon: "📍", text: "윤정희 어르신 픽업 완료 (앙성면)" },
-  { time: "08:20", icon: "🚐", text: "1호차 운행 시작 — 산척면 방면" },
-  { time: "08:23", icon: "📍", text: "김영자 어르신 픽업 완료 (산척면)" },
-  { time: "08:31", icon: "📞", text: "전화 접수 1건 — 내일 예약 등록 (콜센터)" },
-  { time: "08:40", icon: "🚐", text: "2호차 운행 시작 — 소태면 방면" },
-  { time: "08:47", icon: "📍", text: "정갑수 어르신 픽업 완료 (소태면)" },
-  { time: "09:02", icon: "🏥", text: "1호차 건국대충주병원 도착 — 접수 진행" },
+  { time: "08:10", icon: "vehicle", text: "3호차 운행 시작 — 앙성면 방면" },
+  { time: "08:14", icon: "pin", text: "윤정희 어르신 픽업 완료 (앙성면)" },
+  { time: "08:20", icon: "vehicle", text: "1호차 운행 시작 — 산척면 방면" },
+  { time: "08:23", icon: "pin", text: "김영자 어르신 픽업 완료 (산척면)" },
+  { time: "08:31", icon: "phone", text: "전화 접수 1건 — 내일 예약 등록 (콜센터)" },
+  { time: "08:40", icon: "vehicle", text: "2호차 운행 시작 — 소태면 방면" },
+  { time: "08:47", icon: "pin", text: "정갑수 어르신 픽업 완료 (소태면)" },
+  { time: "09:02", icon: "hospital", text: "1호차 건국대충주병원 도착 — 접수 진행" },
 ];
 
 /** 단위경제 — 어르신 3인 합승 1회 운행 기준 (사업계획서 §4) */
@@ -381,9 +381,9 @@ export const REPORT_DETAIL = {
   manager: "이수진 매니저",
   hospital: "건국대충주병원 신장내과",
   chips: [
-    { icon: "✅", label: "투석 정상 완료" },
-    { icon: "💊", label: "처방 변경 있음" },
-    { icon: "⏱", label: "총 3시간 20분" },
+    { icon: "check", label: "투석 정상 완료" },
+    { icon: "pill", label: "처방 변경 있음" },
+    { icon: "clock", label: "총 3시간 20분" },
   ],
   timeline: [
     { time: "09:20", label: "자택 픽업", note: "1호차 · 합승 2인과 함께" },
@@ -437,8 +437,8 @@ export const TRACK = {
 
 /** 관제 → 매니저 공지 (연출) */
 export const MANAGER_NOTICES = [
-  { time: "07:55", icon: "🚧", text: "산척면 19번 국도 부분 공사 — 엄정면 방면 우회 권장" },
-  { time: "08:02", icon: "📞", text: "김영자 어르신 보호자 요청: 픽업 시 현관 벨 대신 전화 주세요" },
+  { time: "07:55", icon: "cone", text: "산척면 19번 국도 부분 공사 — 엄정면 방면 우회 권장" },
+  { time: "08:02", icon: "phone", text: "김영자 어르신 보호자 요청: 픽업 시 현관 벨 대신 전화 주세요" },
 ];
 
 // ───────────────────────────── 자녀 채널 — 정기 일정·멤버십 ─────────────────────────────
@@ -494,9 +494,9 @@ export const DASHBOARD = {
   },
   /** 사회적 성과 — B2G 심사 포인트 */
   social: [
-    { icon: "🏥", value: "12명", label: "치료 중단 위기 어르신의 통원 재개", sub: "투석 7 · 재활 5" },
-    { icon: "🧑‍⚕️", value: "10명", label: "지역 일자리 창출 (동행매니저)", sub: "청년 6 · 경력단절여성 4" },
-    { icon: "💬", value: "4.8점", label: "보호자 만족도 (5점 만점)", sub: "리포트 수신 자녀 설문" },
+    { icon: "hospital", value: "12명", label: "치료 중단 위기 어르신의 통원 재개", sub: "투석 7 · 재활 5" },
+    { icon: "manager", value: "10명", label: "지역 일자리 창출 (동행매니저)", sub: "청년 6 · 경력단절여성 4" },
+    { icon: "message", value: "4.8점", label: "보호자 만족도 (5점 만점)", sub: "리포트 수신 자녀 설문" },
   ],
   /** 월별 운행 추이 */
   monthly: [

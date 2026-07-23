@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { LucideIcon } from "lucide-react";
 
 /** 하단 탭 네비게이션 — CityBalance 플랫폼 문법. 480px 셸에 맞춰 중앙 고정. */
 
 export interface NavItem {
   href: string;
   label: string;
-  icon: string; // 이모지 — Font Awesome CDN 대신 (오프라인 원칙)
+  icon: LucideIcon;
   badge?: boolean;
 }
 
@@ -23,6 +24,7 @@ export default function BottomNav({ items }: { items: NavItem[] }) {
     >
       {items.map((item) => {
         const active = pathname === item.href;
+        const Icon = item.icon;
         return (
           <Link
             key={item.href}
@@ -30,13 +32,9 @@ export default function BottomNav({ items }: { items: NavItem[] }) {
             className={`relative flex flex-col items-center gap-1 px-5 py-2 text-[11px] font-medium transition
               ${active ? "text-primary font-bold" : "text-faint"}`}
           >
-            <span className={`text-xl leading-none transition ${active ? "scale-110" : "grayscale opacity-70"}`}>
-              {item.icon}
-            </span>
+            <Icon size={22} strokeWidth={active ? 2.4 : 2} className="transition" />
             {item.label}
-            {item.badge && (
-              <span className="absolute top-1 right-3 w-2 h-2 rounded-full bg-red" />
-            )}
+            {item.badge && <span className="absolute top-1 right-3 w-2 h-2 rounded-full bg-red" />}
           </Link>
         );
       })}

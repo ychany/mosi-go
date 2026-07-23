@@ -1,4 +1,5 @@
 import NaverMap, { type MapMarker } from "@/components/NaverMap";
+import { ICON_MAP, MARKER_HOSPITAL, Sparkles } from "@/components/icons";
 import { DASHBOARD, HOSPITALS, WARDS, type Ward } from "@/lib/mock-data";
 
 /**
@@ -27,7 +28,7 @@ function DemandMap() {
       position: h.coord,
       color: "#212121",
       major: true,
-      glyph: "＋",
+      glyph: MARKER_HOSPITAL,
       label: name,
     })),
   ];
@@ -209,8 +210,11 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
         {DASHBOARD.social.map((s) => (
           <div key={s.label} className="rounded-2xl bg-card shadow-card px-5 py-4 flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary-light rounded-xl grid place-items-center text-2xl shrink-0">
-              {s.icon}
+            <div className="w-12 h-12 bg-primary-light rounded-xl grid place-items-center text-primary-dark shrink-0">
+              {(() => {
+                const Icon = ICON_MAP[s.icon] ?? Sparkles;
+                return <Icon size={24} />;
+              })()}
             </div>
             <div>
               <p className="tnum text-xl font-extrabold leading-tight">{s.value}</p>

@@ -1,3 +1,4 @@
+import { Check, RefreshCw } from "@/components/icons";
 import { GUARDIAN_ELDER_ID, MEMBERSHIP, UPCOMING_RIDES, elderById } from "@/lib/mock-data";
 
 /**
@@ -22,14 +23,15 @@ export default function SchedulePage() {
         <p className="text-[12px] opacity-90 mt-1">
           {MEMBERSHIP.since}부터 이용 중 · {MEMBERSHIP.benefits.join(" · ")}
         </p>
-        <span className="inline-block mt-4 px-5 py-2.5 bg-white/20 border border-white/30 rounded-3xl text-[13px] font-semibold">
-          ✓ 구독 중
+        <span className="inline-flex items-center gap-1.5 mt-4 px-5 py-2.5 bg-white/20 border border-white/30 rounded-3xl text-[13px] font-semibold">
+          <Check size={15} strokeWidth={3} />
+          구독 중
         </span>
       </section>
 
       {/* 정기 배차 규칙 */}
       <section className="bg-card mx-4 mt-4 px-5 py-4 rounded-2xl shadow-card flex items-center gap-3">
-        <div className="w-11 h-11 bg-primary-light rounded-xl grid place-items-center text-lg">🔄</div>
+        <div className="w-11 h-11 bg-primary-light rounded-xl grid place-items-center text-primary-dark"><RefreshCw size={22} /></div>
         <div className="flex-1">
           <p className="text-[15px] font-bold">{elder.condition} — {elder.frequency}</p>
           <p className="text-xs text-sub mt-0.5">진료 일정에 맞춰 배차가 자동 등록됩니다</p>

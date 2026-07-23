@@ -3,6 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import NaverMap, { type MapMarker, type MapPolyline } from "@/components/NaverMap";
 import {
+  Clock,
+  Hourglass,
+  ICON_MAP,
+  MARKER_HOSPITAL,
+  MARKER_VEHICLE,
+  Stethoscope,
+  UserRound,
+} from "@/components/icons";
+import {
   DISPATCH_SCENARIOS,
   HOSPITALS,
   INTAKE_FEED,
@@ -47,7 +56,7 @@ const HOSPITAL_MARKERS: MapMarker[] = (
   color: "#212121",
   label: name,
   major: true,
-  glyph: "＋",
+  glyph: MARKER_HOSPITAL,
 }));
 
 /** 상단 KPI 스트립 — 배차 전후로 값이 바뀐다 */
@@ -100,13 +109,16 @@ function LiveFeed({ feed, title }: { feed: typeof LIVE_FEED; title: string }) {
         <span className="text-[12px] font-bold text-primary-dark">{title}</span>
       </header>
       <ul className="px-4 py-2.5 space-y-2">
-        {visible.map((f) => (
-          <li key={`${f.time}${f.text}`} className="flex items-start gap-2 text-[12px] animate-[rise_.4s_ease_both]">
-            <span className="tnum text-faint shrink-0">{f.time}</span>
-            <span className="shrink-0">{f.icon}</span>
-            <span className="leading-snug">{f.text}</span>
-          </li>
-        ))}
+        {visible.map((f) => {
+          const Icon = ICON_MAP[f.icon] ?? Clock;
+          return (
+            <li key={`${f.time}${f.text}`} className="flex items-start gap-2 text-[12px] animate-[rise_.4s_ease_both]">
+              <span className="tnum text-faint shrink-0">{f.time}</span>
+              <Icon size={14} className="shrink-0 mt-0.5 text-primary-dark" />
+              <span className="leading-snug">{f.text}</span>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
@@ -124,7 +136,10 @@ function DemandOverlay() {
   return (
     <div className="absolute top-4 left-4 w-64 rounded-2xl bg-card/95 shadow-card-md overflow-hidden">
       <header className="px-4 py-2 bg-[#fff3e0]">
-        <span className="text-[12px] font-bold text-orange">⏳ 미배차 수요 {RESERVATIONS.length}건</span>
+        <span className="text-[12px] font-bold text-orange flex items-center gap-1.5">
+          <Hourglass size={14} />
+          미배차 수요 {RESERVATIONS.length}건
+        </span>
       </header>
       <div className="px-4 py-3 space-y-1.5">
         {rows.map(([ward, n]) => (
@@ -220,7 +235,7 @@ export default function AdminPage() {
     for (const v of filteredVehicles) {
       const color = ROUTE_COLORS[v.colorVar];
       polylines.push({ path: v.path, color });
-      markers.push({ position: v.path[v.path.length - 1], color, major: true, glyph: "🚐", label: v.vehicle });
+      markers.push({ position: v.path[v.path.length - 1], color, major: true, glyph: MARKER_VEHICLE, label: v.vehicle });
       for (const id of v.elderIds) {
         const e = elderById(id);
         markers.push({ position: e.coord, color, label: e.name });
@@ -315,8 +330,14 @@ export default function AdminPage() {
                       })}
                     </ul>
                     <footer className="flex items-center gap-3 px-4 py-2.5 bg-bg text-[11px] text-sub">
-                      <span>🧑‍⚕️ {v.manager}</span>
-                      <span className="tnum">⏱ {v.durationMin}분 · {v.distanceKm}km</span>
+                      <span className="flex items-center gap-1">
+                        <Stethoscope size={13} />
+                        {v.manager}
+                      </span>
+                      <span className="tnum flex items-center gap-1">
+                        <Clock size={13} />
+                        {v.durationMin}분 · {v.distanceKm}km
+                      </span>
                       <span className="ml-auto tnum font-semibold text-primary-dark">
                         좌석 {v.elderIds.length}/{v.seats}
                       </span>
@@ -333,8 +354,8 @@ export default function AdminPage() {
                   const e = elderById(r.elderId);
                   return (
                     <li key={r.id} className="rounded-2xl bg-card shadow-card px-4 py-3.5 flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary-light rounded-xl grid place-items-center text-base shrink-0">
-                        🧓
+                      <div className="w-10 h-10 bg-primary-light rounded-xl grid place-items-center text-primary-dark shrink-0">
+                        <UserRound size={20} />
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-bold">

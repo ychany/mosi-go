@@ -4,6 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import NaverMap, { type MapMarker } from "@/components/NaverMap";
 import {
+  BusFront,
+  ChevronRight,
+  ICON_MAP,
+  MARKER_HOSPITAL,
+  Navigation,
+  Phone,
+  TriangleAlert,
+  User,
+} from "@/components/icons";
+import {
   DISPATCH_SCENARIOS,
   HOSPITALS,
   MANAGER_NOTICES,
@@ -37,7 +47,7 @@ const MAP_MARKERS: MapMarker[] = [
     position: HOSPITALS[RUN.hospital].coord,
     color: "#212121",
     major: true,
-    glyph: "＋",
+    glyph: MARKER_HOSPITAL,
     label: RUN.hospital,
   },
 ];
@@ -49,8 +59,8 @@ export default function ManagerHome() {
   return (
     <div className="flex-1 flex flex-col">
       <header className="grad text-white px-5 h-16 flex items-center justify-between sticky top-0 z-40">
-        <span className="font-extrabold text-lg flex items-center gap-2">🚐 모시GO 매니저</span>
-        <span className="text-sm text-white/90">👤 이수진</span>
+        <span className="font-extrabold text-lg flex items-center gap-2"><BusFront size={22} />모시GO 매니저</span>
+        <span className="text-sm text-white/90 flex items-center gap-1.5"><User size={16} />이수진</span>
       </header>
 
       {/* 히어로 — 오늘 운행 요약 */}
@@ -64,7 +74,7 @@ export default function ManagerHome() {
           </div>
         </div>
         <p className="tnum text-[11px] opacity-80 mt-1.5">
-          {RUN.hospital} 방면 · ⏱ {RUN.durationMin}분 · {RUN.distanceKm}km · 좌석 {RUN.elderIds.length}/{RUN.seats}
+          {RUN.hospital} 방면 · {RUN.durationMin}분 · {RUN.distanceKm}km · 좌석 {RUN.elderIds.length}/{RUN.seats}
         </p>
       </section>
 
@@ -82,10 +92,10 @@ export default function ManagerHome() {
         </div>
         <div className="grid grid-cols-2 gap-2 mt-3">
           <button className="h-11 rounded-xl bg-bg border border-line text-[13px] font-bold active:scale-[.98] transition">
-            ☎ 어르신 전화
+            <span className="inline-flex items-center gap-1.5"><Phone size={15} />어르신 전화</span>
           </button>
           <button className="h-11 rounded-xl bg-bg border border-line text-[13px] font-bold active:scale-[.98] transition">
-            🧭 내비 연결
+            <span className="inline-flex items-center gap-1.5"><Navigation size={15} />내비 연결</span>
           </button>
         </div>
         <Link
@@ -151,12 +161,12 @@ export default function ManagerHome() {
                 >
                   {status}
                 </span>
-                <span className={`text-faint text-xs transition-transform ${open ? "rotate-90" : ""}`}>›</span>
+                <ChevronRight size={16} className={`text-faint transition-transform ${open ? "rotate-90" : ""}`} />
               </button>
               {open && (
                 <div className="px-5 pb-4 -mt-1 animate-[rise_.3s_ease_both]">
                   <div className="rounded-xl bg-bg px-4 py-3">
-                    <p className="text-[11px] font-bold text-primary-dark mb-1.5">📌 케어노트</p>
+                    <p className="text-[11px] font-bold text-primary-dark mb-1.5 flex items-center gap-1"><TriangleAlert size={13} />케어노트</p>
                     <ul className="space-y-1">
                       {e.careNotes.map((n) => (
                         <li key={n} className="text-[13px] flex gap-2">
@@ -181,7 +191,7 @@ export default function ManagerHome() {
       <div className="mx-4 mb-6 space-y-2">
         {MANAGER_NOTICES.map((n) => (
           <div key={n.time} className="bg-card rounded-2xl shadow-card px-4 py-3 flex items-start gap-2.5">
-            <span className="text-base shrink-0">{n.icon}</span>
+            {(() => { const Icon = ICON_MAP[n.icon] ?? TriangleAlert; return <Icon size={16} className="shrink-0 mt-0.5 text-primary-dark" />; })()}
             <p className="text-[13px] leading-snug flex-1">{n.text}</p>
             <span className="tnum text-[11px] text-faint shrink-0">{n.time}</span>
           </div>

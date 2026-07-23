@@ -36,7 +36,7 @@ export interface MapMarker {
   label?: string;
   /** true면 큰 강조 마커 (병원·차량) */
   major?: boolean;
-  /** 이모지 등 마커 안에 표시할 글자 */
+  /** 마커 안에 넣을 SVG 문자열(components/icons의 MARKER_*) 또는 숫자·짧은 글자 */
   glyph?: string;
 }
 
@@ -95,8 +95,11 @@ function loadScript(): Promise<boolean> {
 function markerHtml(m: MapMarker): string {
   const size = m.major ? 34 : 18;
   const color = m.color ?? "#6ab34d";
+  // SVG 문자열이면 그대로 삽입(색은 currentColor 상속), 아니면 텍스트로 렌더
   const glyph = m.glyph
-    ? `<span style="font-size:${m.major ? 16 : 10}px;line-height:1">${m.glyph}</span>`
+    ? m.glyph.startsWith("<svg")
+      ? `<span style="color:#fff;display:flex">${m.glyph}</span>`
+      : `<span style="color:#fff;font-size:${m.major ? 15 : 10}px;font-weight:800;line-height:1">${m.glyph}</span>`
     : "";
   const label = m.label
     ? `<div style="position:absolute;top:${size + 2}px;left:50%;transform:translateX(-50%);
