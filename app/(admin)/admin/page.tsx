@@ -9,7 +9,7 @@ import {
   ICON_MAP,
   MARKER_HOSPITAL,
   MARKER_VEHICLE,
-  Send,
+  RotateCcw,
   Stethoscope,
   UserRound,
 } from "@/components/icons";
@@ -31,26 +31,26 @@ import {
 } from "@/lib/mock-data";
 
 /**
- * 배차 관제 — 데모의 하이라이트. 교통 공백의 해소 (PROTOTYPE_PLAN §6.1)
+ * 배차 관제 — 모니터링 전용 화면. 교통 공백의 해소 (PROTOTYPE_PLAN §6.1)
  *
- * 화면의 주체는 지자체가 아니라 **모시GO 운영팀**이다 (§1.3).
- * AI가 새벽에 자동 수립한 배차를 운영팀이 감독·확정해 매니저에게 발송한다.
+ * **사람이 배차를 실행하지 않는다** (§1.3). AI가 새벽 05:00에 배차를 수립해
+ * 매니저에게 자동 발송했고, 이 화면은 그 결과와 운행 진행 상황을 조회한다.
  *
- * idle    AI 배차 결과 대기 — 미배차 예약 8건 + 흩어진 자택 마커
- * running "AI 배차 결과 불러오는 중…" 1.5초
- * done    차량 3대 카드(픽업 순번·매니저·소요·좌석) + 노선 3개 + 단위경제 비교
- * sent    매니저 발송 완료 — 라이브 관제 피드 시작
- *
- * 재검토 시 시나리오 순환 — 심사위원의 "다른 조건으로 다시" 요청 대응.
+ * 배차 리플레이: 진입 시 새벽에 일어난 클러스터링을 자동 재생한다.
+ *   replay  흩어진 예약 8건 — "AI가 묶는 중" 1.6초
+ *   live    3개 노선으로 묶인 결과 + 라이브 관제 피드
+ * [다시 보기]는 실행이 아니라 재생이며, 누를 때마다 시나리오를 순환해
+ * 심사위원의 "다른 조건으로" 요청에 대응한다.
  */
 
-type Phase = "idle" | "running" | "done" | "sent";
+type Phase = "replay" | "live";
 type HospitalFilter = "전체" | Hospital;
 
-const RUNNING_STEPS = [
-  "AI 배차 결과 불러오는 중…",
-  "취소·추가 예약 반영 중…",
-  "매니저 가용 인원 대조 중…",
+/** 리플레이 중 표시할 단계 — 새벽에 AI가 수행한 과정 */
+const REPLAY_STEPS = [
+  "예약 시간대 ±40분 그룹핑",
+  "출발지 좌표 방면 클러스터링",
+  "차량 정원 배정 및 경로 산출",
 ];
 
 const FILTERS: HospitalFilter[] = ["전체", "건국대충주병원", "충주의료원"];
@@ -67,25 +67,26 @@ const HOSPITAL_MARKERS: MapMarker[] = (
 
 /** 상단 KPI 스트립 — 배차 전후로 값이 바뀐다 */
 function KpiStrip({ phase, vehicleCount }: { phase: Phase; vehicleCount: number }) {
-  const done = phase === "done" || phase === "sent";
+  const live = phase === "live";
   const kpis = [
     { label: "오늘 예약", value: `${RESERVATIONS.length}건`, sub: "정기 5 · 앱 2 · 전화 1" },
     {
       label: "운행 차량",
-      value: done ? `${vehicleCount}대` : "—",
-      sub: done ? `1:1 대비 −${UNIT_ECONOMICS.soloVehiclesNeeded - vehicleCount}대` : "AI 배차 대기",
-      highlight: done,
+      value: live ? `${vehicleCount}대` : "—",
+      sub: live ? `1:1 대비 −${UNIT_ECONOMICS.soloVehiclesNeeded - vehicleCount}대` : "배차 재생 중",
+      highlight: live,
     },
     {
       label: "운행당 마진",
-      value: done ? "+1.3만" : "—",
-      sub: done ? "3인 합승 기준" : "확정 후 산출",
-      highlight: done,
+      value: live ? "+1.3만" : "—",
+      sub: live ? "3인 합승 기준" : "산출 중",
+      highlight: live,
     },
     {
-      label: "매니저 배정",
-      value: phase === "sent" ? "3명 수락 대기" : done ? "3명" : "0명",
-      sub: "충주 북부권 대기 5명",
+      label: "매니저 수락",
+      value: live ? "3 / 3" : "—",
+      sub: live ? "전원 수락 · 운행 중" : "확인 중",
+      highlight: live,
     },
   ];
   return (
@@ -148,7 +149,7 @@ function DemandOverlay() {
       <header className="px-4 py-2 bg-[#fff3e0]">
         <span className="text-[12px] font-bold text-orange flex items-center gap-1.5">
           <Hourglass size={14} />
-          미배차 수요 {RESERVATIONS.length}건
+          접수 수요 {RESERVATIONS.length}건
         </span>
       </header>
       <div className="px-4 py-3 space-y-1.5">
@@ -162,7 +163,7 @@ function DemandOverlay() {
           </div>
         ))}
         <p className="text-[10.5px] text-faint pt-1.5 border-t border-line leading-snug">
-          AI가 새벽 05:00에 수립한 배차 결과를 불러와 검토합니다
+          AI가 같은 시간대·같은 방면 수요를 묶고 있습니다
         </p>
       </div>
     </div>
@@ -203,7 +204,7 @@ function EconomicsCard({ vehicleCount }: { vehicleCount: number }) {
 }
 
 export default function AdminPage() {
-  const [phase, setPhase] = useState<Phase>("idle");
+  const [phase, setPhase] = useState<Phase>("replay");
   const [scenarioIdx, setScenarioIdx] = useState(0);
   const [runStep, setRunStep] = useState(0);
   const [filter, setFilter] = useState<HospitalFilter>("전체");
@@ -211,27 +212,26 @@ export default function AdminPage() {
 
   const scenario = DISPATCH_SCENARIOS[scenarioIdx];
 
-  function dispatch() {
-    if (phase === "running") return;
+  /**
+   * 새벽 배차를 다시 재생한다 — 실행이 아니라 리플레이 (§1.3).
+   * 누를 때마다 다음 시나리오로 순환해 "다른 조건으로" 요청에 대응한다.
+   */
+  function replay() {
+    if (phase === "replay") return;
     if (runCount.current > 0) {
       setScenarioIdx((i) => (i + 1) % DISPATCH_SCENARIOS.length);
     }
     runCount.current += 1;
     setRunStep(0);
     setFilter("전체");
-    setPhase("running");
+    setPhase("replay");
   }
 
-  /** 운영팀이 AI 배차를 확정해 매니저에게 발송 (§1.3 2단계) */
-  function confirmDispatch() {
-    setPhase("sent");
-  }
-
-  // running 연출: 단계 메시지 500ms 간격 → 1.6초 후 완료
+  // 리플레이 연출: 단계 메시지 500ms 간격 → 1.6초 후 결과 표시
   useEffect(() => {
-    if (phase !== "running") return;
-    const stepTimer = setInterval(() => setRunStep((s) => Math.min(s + 1, RUNNING_STEPS.length - 1)), 500);
-    const doneTimer = setTimeout(() => setPhase("done"), 1600);
+    if (phase !== "replay") return;
+    const stepTimer = setInterval(() => setRunStep((s) => Math.min(s + 1, REPLAY_STEPS.length - 1)), 500);
+    const doneTimer = setTimeout(() => setPhase("live"), 1600);
     return () => {
       clearInterval(stepTimer);
       clearTimeout(doneTimer);
@@ -246,7 +246,7 @@ export default function AdminPage() {
   const markers: MapMarker[] = [...HOSPITAL_MARKERS];
   const polylines: MapPolyline[] = [];
 
-  const settled = phase === "done" || phase === "sent";
+  const settled = phase === "live";
 
   if (settled) {
     for (const v of filteredVehicles) {
@@ -284,11 +284,11 @@ export default function AdminPage() {
               {TODAY} · AI 배차 수립 {AUTO_DISPATCH_AT}
             </p>
             <div className="flex items-baseline justify-between mb-2.5">
-              <h1 className="font-extrabold text-lg">오늘의 통원 예약</h1>
+              <h1 className="font-extrabold text-lg">오늘의 배차 현황</h1>
               <span className="tnum text-sm text-sub">
                 {settled
                   ? `${activeElderCount}건 · ${scenario.vehicles.length}대`
-                  : `${RESERVATIONS.length}건 · 미배차`}
+                  : `${RESERVATIONS.length}건 · 배차 재생 중`}
               </span>
             </div>
             {/* 병원 필터 칩 */}
@@ -397,52 +397,33 @@ export default function AdminPage() {
             )}
           </div>
 
-          {/* 감독·확정 영역 + 단위경제 */}
+          {/* 모니터링 요약 + 리플레이 (실행 버튼 없음 — §1.3) */}
           <div className="border-t border-line p-4 space-y-3 bg-card">
             {settled && <EconomicsCard vehicleCount={scenario.vehicles.length} />}
 
-            {phase === "sent" ? (
+            {settled ? (
               <>
-                <div className="rounded-2xl bg-primary-light px-4 py-3 animate-[rise_.4s_ease_both]">
+                <div className="rounded-2xl bg-primary-light px-4 py-3">
                   <p className="text-[13px] font-bold text-primary-dark flex items-center gap-1.5">
                     <Check size={15} strokeWidth={3} />
-                    매니저 3명에게 배차 발송 완료
+                    매니저 3명 전원 수락 · 운행 중
                   </p>
                   <p className="text-[11px] text-sub mt-0.5">
-                    이수진 · 박지훈 · 김도현 — 각 매니저 앱에서 수락 대기 중
+                    이수진 · 박지훈 · 김도현 — {AUTO_DISPATCH_AT} 자동 발송
                   </p>
                 </div>
                 <button
-                  onClick={dispatch}
+                  onClick={replay}
                   className="w-full h-11 rounded-2xl bg-card border border-line text-sub font-bold text-[14px]
                     hover:border-primary/50 active:scale-[.99] transition"
                 >
-                  다른 조건으로 재검토
+                  <span className="inline-flex items-center gap-2">
+                    <RotateCcw size={15} />
+                    배차 과정 다시 보기
+                  </span>
                 </button>
               </>
-            ) : (
-              <button
-                onClick={phase === "done" ? confirmDispatch : dispatch}
-                disabled={phase === "running"}
-                className={`w-full h-12 rounded-2xl grad text-white font-bold text-[15px]
-                  shadow-[0_4px_16px_rgba(106,179,77,0.35)] hover:brightness-105 active:scale-[.99] transition disabled:opacity-70
-                  ${phase === "idle" ? "animate-[btnpulse_2.2s_ease-in-out_infinite]" : ""}`}
-              >
-                {phase === "running" ? (
-                  <span className="inline-flex items-center gap-2.5">
-                    <span className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                    {RUNNING_STEPS[runStep]}
-                  </span>
-                ) : phase === "done" ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Send size={17} />
-                    배차 확정 · 매니저에게 발송
-                  </span>
-                ) : (
-                  "AI 배차 결과 검토"
-                )}
-              </button>
-            )}
+            ) : null}
           </div>
         </aside>
 
@@ -473,6 +454,33 @@ export default function AdminPage() {
           ) : (
             <>
               <DemandOverlay />
+              <div className="absolute inset-0 grid place-items-center pointer-events-none">
+                <div className="rounded-2xl bg-card/95 shadow-card-lg px-6 py-5 w-72">
+                  <p className="text-[14px] font-bold flex items-center gap-2 mb-3">
+                    <span className="w-4 h-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+                    AI 배차 과정 재생 중
+                  </p>
+                  <ol className="space-y-2">
+                    {REPLAY_STEPS.map((step, i) => (
+                      <li
+                        key={step}
+                        className={`text-[12.5px] flex items-center gap-2 transition-opacity
+                          ${i <= runStep ? "opacity-100" : "opacity-35"}`}
+                      >
+                        {i < runStep ? (
+                          <Check size={14} strokeWidth={3} className="text-primary shrink-0" />
+                        ) : (
+                          <span className="w-3.5 h-3.5 rounded-full border-2 border-line shrink-0" />
+                        )}
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="text-[11px] text-faint mt-3 pt-3 border-t border-line leading-snug">
+                    오늘 {AUTO_DISPATCH_AT.replace("오늘 ", "")}에 자동 수행된 배차입니다
+                  </p>
+                </div>
+              </div>
               <div className="absolute top-4 right-4 rounded-2xl bg-card/95 shadow-card-md px-4 py-2.5 text-xs space-y-1">
                 <p className="text-[11px] font-bold text-sub mb-0.5">목적지</p>
                 <p className="flex items-center gap-2">
@@ -484,7 +492,7 @@ export default function AdminPage() {
                   충주의료원
                 </p>
               </div>
-              <LiveFeed feed={INTAKE_FEED} title="접수 현황" />
+              <LiveFeed feed={INTAKE_FEED} title="오늘 접수 내역" />
             </>
           )}
         </div>

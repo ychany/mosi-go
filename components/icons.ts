@@ -39,6 +39,7 @@ export {
   CalendarCheck,
   Clock,
   RefreshCw,
+  RotateCcw,
   CheckCircle2,
   Check,
   Hourglass,
