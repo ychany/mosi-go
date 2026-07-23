@@ -21,6 +21,7 @@ declare global {
         Marker: new (opts: object) => NaverOverlay;
         Polyline: new (opts: object) => NaverOverlay;
         Position: Record<string, unknown>;
+        Event?: { trigger: (target: object, type: string) => void };
       };
     };
   }
@@ -134,6 +135,12 @@ export default function NaverMap({ center, zoom, markers = [], polylines = [], c
         logoControlOptions: { position: maps.Position.BOTTOM_LEFT },
       });
       setStatus("ready");
+      // 컨테이너 크기가 늦게 확정된 경우 대비 — 생성 직후 리사이즈 재계산
+      setTimeout(() => {
+        if (mapRef.current && window.naver?.maps.Event) {
+          window.naver.maps.Event.trigger(mapRef.current, "resize");
+        }
+      }, 100);
     });
     return () => {
       cancelled = true;
@@ -174,23 +181,29 @@ export default function NaverMap({ center, zoom, markers = [], polylines = [], c
     ];
   }, [status, markers, polylines]);
 
+  // 외곽 div는 호출부가 크기·포지션을 결정하고(className), 지도 노드는 w-full h-full로 채운다.
+  // 주의: absolute inset-0로 크기를 잡으면 안 된다 — 네이버 지도가 초기화 시 컨테이너에
+  // position:relative 인라인 스타일을 주입해 inset 기반 크기가 0으로 무너진다.
   return (
-    <div ref={containerRef} className={`relative bg-[#e8ede5] ${className ?? ""}`}>
-      {status !== "ready" && (
-        <div className="absolute inset-0 grid place-items-center">
-          <div className="text-center text-sub text-sm px-6">
-            <p className="font-bold mb-1">지도 영역</p>
-            {status === "loading" ? (
-              <p>지도를 불러오는 중…</p>
-            ) : (
-              <p>
-                NEXT_PUBLIC_NCP_KEY_ID 설정 시<br />
-                네이버 지도가 표시됩니다
-              </p>
-            )}
+    <div className={className}>
+      <div className="relative w-full h-full bg-[#e8ede5] overflow-hidden">
+        <div ref={containerRef} className="w-full h-full" />
+        {status !== "ready" && (
+          <div className="absolute inset-0 grid place-items-center">
+            <div className="text-center text-sub text-sm px-6">
+              <p className="font-bold mb-1">지도 영역</p>
+              {status === "loading" ? (
+                <p>지도를 불러오는 중…</p>
+              ) : (
+                <p>
+                  NEXT_PUBLIC_NCP_KEY_ID 설정 시<br />
+                  네이버 지도가 표시됩니다
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
