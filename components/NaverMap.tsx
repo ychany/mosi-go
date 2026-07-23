@@ -57,49 +57,36 @@ const KEY = process.env.NEXT_PUBLIC_NCP_KEY_ID;
 /**
  * 스크립트는 앱 전체에서 한 번만 로드한다.
  *
- * 네이버 클라우드 애플리케이션 세대에 따라 인증 파라미터가 다르다:
- * - 구형 (AI·NAVER API, Client ID 라벨이 X-NCP-APIGW-API-KEY-ID): ncpClientId
- * - 신형 (Maps 신규 콘솔): ncpKeyId
- * 구형을 먼저 시도하고, 인증 실패 콜백(navermap_authFailure)이 오면 신형으로 재시도한다.
+ * 인증 파라미터는 신형 Maps 콘솔 기준 ncpKeyId (2026-07 실키로 검증 완료).
+ * 주의: 콘솔 Web 서비스 URL에는 포트를 뺀 호스트만 등록해야 한다 (http://localhost).
+ * 인증 실패 시 navermap_authFailure 훅이 호출되며 플레이스홀더로 degradation.
  */
 let scriptPromise: Promise<boolean> | null = null;
-
-function tryLoad(param: "ncpClientId" | "ncpKeyId"): Promise<boolean> {
-  return new Promise((resolve) => {
-    let settled = false;
-    const done = (ok: boolean) => {
-      if (!settled) {
-        settled = true;
-        resolve(ok);
-      }
-    };
-    // 인증 실패 시 네이버가 호출하는 전역 훅
-    (window as unknown as { navermap_authFailure?: () => void }).navermap_authFailure = () => {
-      console.warn(`[NaverMap] ${param} 인증 실패`);
-      done(false);
-    };
-    const s = document.createElement("script");
-    s.dataset.naverParam = param;
-    s.src = `https://oapi.map.naver.com/openapi/v3/maps.js?${param}=${KEY}`;
-    // 인증 실패 콜백은 로드 후 인증 요청이 끝나야 오므로 충분히 기다린 뒤 판정
-    s.onload = () => setTimeout(() => done(!!window.naver?.maps), 1500);
-    s.onerror = () => done(false); // 오프라인 등 — 플레이스홀더로 degradation
-    document.head.appendChild(s);
-  });
-}
 
 function loadScript(): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
   if (window.naver?.maps) return Promise.resolve(true);
   if (!KEY) return Promise.resolve(false);
   if (!scriptPromise) {
-    scriptPromise = (async () => {
-      // 신형(VPC Maps) 파라미터 우선 — 실패 시 구형으로 재시도
-      if (await tryLoad("ncpKeyId")) return true;
-      document.querySelectorAll("script[data-naver-param]").forEach((el) => el.remove());
-      delete (window as { naver?: unknown }).naver;
-      return tryLoad("ncpClientId");
-    })();
+    scriptPromise = new Promise((resolve) => {
+      let settled = false;
+      const done = (ok: boolean) => {
+        if (!settled) {
+          settled = true;
+          resolve(ok);
+        }
+      };
+      // 인증 실패 시 네이버가 호출하는 전역 훅 — 로드 후 비동기로 올 수 있다
+      (window as unknown as { navermap_authFailure?: () => void }).navermap_authFailure = () => {
+        console.warn("[NaverMap] 인증 실패 — 콘솔의 Web 서비스 URL(포트 제외) 등록을 확인하세요");
+        done(false);
+      };
+      const s = document.createElement("script");
+      s.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${KEY}`;
+      s.onload = () => setTimeout(() => done(!!window.naver?.maps), 1500);
+      s.onerror = () => done(false); // 오프라인 등 — 플레이스홀더로 degradation
+      document.head.appendChild(s);
+    });
   }
   return scriptPromise;
 }
