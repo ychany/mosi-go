@@ -89,7 +89,7 @@ export default function ManagerHome() {
           </button>
         </div>
         <Link
-          href="/m/trip"
+          href="/manager/trip"
           className="mt-2 grad flex items-center justify-center h-12 rounded-xl text-white font-bold text-[15px]
             shadow-[0_4px_16px_rgba(106,179,77,0.35)] active:scale-[.99] transition"
         >

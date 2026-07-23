@@ -111,7 +111,7 @@ export default function ReportPage() {
 
           {/* 다음 예약 */}
           <Link
-            href="/g/schedule"
+            href="/guardian/schedule"
             className="mx-5 mb-4 flex items-center gap-3 rounded-xl border border-line px-4 py-3 active:scale-[.99] transition"
           >
             <div className="w-10 h-10 bg-primary-light rounded-xl grid place-items-center text-lg shrink-0">📅</div>

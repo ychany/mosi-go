@@ -7,9 +7,9 @@ export default function GuardianLayout({ children }: { children: React.ReactNode
       <div className="app-shell has-bottom-nav flex flex-col">{children}</div>
       <BottomNav
         items={[
-          { href: "/g", label: "홈", icon: "🏠" },
-          { href: "/g/schedule", label: "정기 일정", icon: "📅" },
-          { href: "/g/report", label: "리포트", icon: "📋", badge: true },
+          { href: "/guardian", label: "홈", icon: "🏠" },
+          { href: "/guardian/schedule", label: "정기 일정", icon: "📅" },
+          { href: "/guardian/report", label: "리포트", icon: "📋", badge: true },
         ]}
       />
     </div>

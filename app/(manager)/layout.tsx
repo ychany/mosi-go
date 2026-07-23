@@ -7,8 +7,8 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
       <div className="app-shell has-bottom-nav flex flex-col">{children}</div>
       <BottomNav
         items={[
-          { href: "/m", label: "오늘 동행", icon: "🚐" },
-          { href: "/m/trip", label: "동행 진행", icon: "✅" },
+          { href: "/manager", label: "오늘 동행", icon: "🚐" },
+          { href: "/manager/trip", label: "동행 진행", icon: "✅" },
         ]}
       />
     </div>

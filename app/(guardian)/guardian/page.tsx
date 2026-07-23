@@ -107,12 +107,12 @@ export default function GuardianHome() {
       {/* 다음 일정 프리뷰 */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2">
         <h2 className="text-base font-bold">다음 통원</h2>
-        <Link href="/g/schedule" className="text-[13px] text-primary font-medium">
+        <Link href="/guardian/schedule" className="text-[13px] text-primary font-medium">
           전체보기 →
         </Link>
       </div>
       <Link
-        href="/g/schedule"
+        href="/guardian/schedule"
         className="bg-card mx-4 mb-5 px-5 py-4 rounded-2xl shadow-card flex items-center gap-3 active:scale-[.99] transition"
       >
         <div className="w-11 h-11 bg-primary-light rounded-xl grid place-items-center text-lg">📅</div>

@@ -15,7 +15,7 @@ const CHANNELS = [
     device: "데스크톱",
   },
   {
-    href: "/m",
+    href: "/manager",
     icon: "🧑‍⚕️",
     tag: "어르신 트랙",
     title: "동행매니저",
@@ -23,7 +23,7 @@ const CHANNELS = [
     device: "모바일",
   },
   {
-    href: "/g",
+    href: "/guardian",
     icon: "👨‍👩‍👧",
     tag: "자녀 트랙",
     title: "자녀 · 보호자",
