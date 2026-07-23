@@ -6,21 +6,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex-1 flex flex-col">
       <header className="grad text-white sticky top-0 z-50 shadow-card-md">
-        <div className="flex items-center gap-8 px-6 h-16">
-          <Link href="/" className="font-extrabold text-lg flex items-center gap-2">
-            <BusFront size={22} />
-            모시GO
-            <span className="text-xs font-medium text-white/85 bg-white/15 rounded-full px-2.5 py-0.5">관제</span>
+        <div className="flex items-center gap-3 sm:gap-8 px-4 sm:px-6 h-14 sm:h-16">
+          <Link href="/" className="font-extrabold text-base sm:text-lg flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <BusFront size={22} className="shrink-0" />
+            <span className="whitespace-nowrap">모시GO</span>
+            <span className="hidden sm:inline text-xs font-medium text-white/85 bg-white/15 rounded-full px-2.5 py-0.5">
+              관제
+            </span>
           </Link>
-          <nav className="flex gap-1 text-sm font-medium">
-            <Link href="/admin" className="px-3.5 py-1.5 rounded-[10px] hover:bg-white/15 transition">
+          <nav className="flex gap-0.5 sm:gap-1 text-[13px] sm:text-sm font-medium">
+            <Link href="/admin" className="px-2.5 sm:px-3.5 py-1.5 rounded-[10px] hover:bg-white/15 transition whitespace-nowrap">
               배차 관제
             </Link>
-            <Link href="/admin/dashboard" className="px-3.5 py-1.5 rounded-[10px] hover:bg-white/15 transition">
-              지자체 대시보드
+            <Link
+              href="/admin/dashboard"
+              className="px-2.5 sm:px-3.5 py-1.5 rounded-[10px] hover:bg-white/15 transition whitespace-nowrap"
+            >
+              대시보드
             </Link>
           </nav>
-          <span className="ml-auto text-sm text-white/90 flex items-center gap-1.5">
+          <span className="ml-auto text-sm text-white/90 items-center gap-1.5 hidden md:flex">
             <User size={16} />
             모시GO 운영팀 · 충주
           </span>
