@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 모시GO 🚐
 
-## Getting Started
+**고령자 의료동행 모빌리티 플랫폼 — 집에서 병원, 다시 집까지**
 
-First, run the development server:
+> 2026 충주 지역정주형 특화산업 챌린지 · IR 시연용 웹 프로토타입
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**🔗 [https://mosi-go.vercel.app](https://mosi-go.vercel.app)**
+
+---
+
+## 무엇을 해결하나
+
+충주시는 65세 이상 인구 비율 **25.2%**(2025.8, 행정안전부)로 이미 초고령사회다. 읍·면 어르신의 정기 통원(투석 주 3회, 재활 주 2~3회)에서 세 가지 공백이 겹친다.
+
+| 공백 | 문제 | 모시GO의 해법 |
+|---|---|---|
+| **교통** | 읍·면→거점병원 버스 1시간+, 배차 간격 1~2시간. 콜버스는 진료 시간을 보장하지 못하고, 장애인콜택시는 자격·공급이 제한적 | **AI 합승 배차** — 진료 예약 기준으로 같은 시간대(±40분)·같은 방면 수요를 묶어 왕복 배차 |
+| **의료** | 이동이 안 되면 치료를 중단·포기 | **동행매니저** — 픽업→접수→진료→수납→약국→귀가 전 과정 동행 |
+| **돌봄** | 자녀는 수도권에 있고, 진료 내용·처방 변경을 가족 누구도 모름 | **AI 진료 리포트 + 실시간 위치** — 매니저 음성 메모를 자녀용 리포트로 자동 정리 |
+
+> **"서울은 병원이 가까워서 '동행'만 팔면 되지만, 충주는 병원까지 '가는 것' 자체가 문제입니다."**
+>
+> 지방은 이동 거리가 길어 1:1 구조로는 원가가 성립하지 않는다. **1:1이면 적자, 합승이면 흑자** — AI 배차는 기술 과시가 아니라 수익모델 그 자체다.
+
+---
+
+## 화면 구성
+
+3개 트랙이 하나의 앱 안에서 라우트 그룹으로 분리돼 있다.
+
+| 경로 | 트랙 | 내용 |
+|---|---|---|
+| [`/`](https://mosi-go.vercel.app) | — | 데모 홈 · 3채널 진입 허브 |
+| [`/admin`](https://mosi-go.vercel.app/admin) | 지자체·운영팀 | **배차 관제** (모니터링) — 배차 리플레이, KPI, 라이브 피드 ★ |
+| [`/admin/dashboard`](https://mosi-go.vercel.app/admin/dashboard) | 지자체 | B2G 대시보드 — 수요 지도, 예산 집행, 사회적 성과 |
+| [`/manager`](https://mosi-go.vercel.app/manager) | 어르신(현장) | 매니저 오늘 동행 — 배차 수락, 경로, 케어노트 |
+| [`/manager/trip`](https://mosi-go.vercel.app/manager/trip) | 어르신(현장) | **동행 진행** — 체크리스트, 음성 메모 → AI 리포트 ★ |
+| [`/guardian`](https://mosi-go.vercel.app/guardian) | 자녀 | 실시간 차량 위치 |
+| [`/guardian/schedule`](https://mosi-go.vercel.app/guardian/schedule) | 자녀 | 정기 일정 · 케어 멤버십 |
+| [`/guardian/report`](https://mosi-go.vercel.app/guardian/report) | 자녀 | 진료 리포트 수신함 |
+
+★ = 데모 하이라이트
+
+### 배차는 사람이 실행하지 않는다
+
+```
+1. AI 배차 엔진   매일 새벽 05:00 · 무인 자동 배차 → 매니저에게 자동 발송
+2. 관제 화면      모니터링 전용 — 결과와 운행 상황 조회 (실행 버튼 없음)
+3. 동행매니저     배정된 노선을 수락하고 현장 수행
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+지자체는 예산을 위탁하고 성과를 보고받는 주체이지 실행 주체가 아니다. 배차에 인력이 붙으면 확산할수록 인건비가 늘어나므로, 무인 자동 배차라야 "충주에서 전국 시군으로 복제"라는 성장 논리가 성립한다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 기술 스택
 
-## Learn More
+| 레이어 | 선택 |
+|---|---|
+| 프레임워크 | Next.js 16 (App Router) · TypeScript |
+| 스타일 | Tailwind CSS v4 |
+| 아이콘 | lucide-react |
+| 지도 | Naver Maps JS API v3 |
+| 데이터 | `lib/mock-data.ts` (정적 TS 파일) |
+| 배포 | Vercel |
 
-To learn more about Next.js, take a look at the following resources:
+### 시연용 프로토타입입니다
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**백엔드·DB·실제 AI 호출이 없습니다.** 모든 데이터는 `lib/mock-data.ts` 한 파일에 하드코딩돼 있고, AI 배차·리포트 생성·음성 인식은 연출입니다. 새로고침하면 초기 상태로 돌아갑니다.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> **설계 원칙:** 발표장 인터넷이 끊겨도 지도를 제외한 모든 기능이 동작해야 한다. 폰트를 `next/font`로 셀프호스팅하고 아이콘·차트에 CDN을 쓰지 않는 이유다.
 
-## Deploy on Vercel
+인물·예약·수치는 전부 가상이며 실존 인물과 무관합니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 실행 방법
+
+```bash
+npm install
+npm run dev
+```
+
+[http://localhost:3000](http://localhost:3000) 접속.
+
+### 지도를 표시하려면 (선택)
+
+키가 없어도 지도 영역이 회색 플레이스홀더로 대체될 뿐 나머지 화면은 정상 동작한다.
+
+1. [네이버 클라우드 플랫폼](https://www.ncloud.com) → **Maps** → Application 등록
+2. **API 선택**에서 `Dynamic Map` 체크
+3. **Web 서비스 URL**에 `http://localhost` 등록
+   - ⚠️ **포트를 빼야 한다.** `http://localhost:3000`으로 등록하면 인증이 실패한다
+   - 등록 반영에 몇 분 걸릴 수 있다
+4. 발급된 Client ID를 `.env.local`에 기입
+
+```bash
+cp .env.example .env.local
+# NEXT_PUBLIC_NCP_KEY_ID=발급받은_클라이언트_ID
+```
+
+배포 시에는 같은 화면에 배포 도메인(`https://<프로젝트>.vercel.app`)을 추가 등록하고, Vercel 환경변수에 같은 키를 넣은 뒤 **재배포**해야 한다 (`NEXT_PUBLIC_` 변수는 빌드 시점에 번들로 들어간다).
+
+---
+
+## 프로젝트 구조
+
+```
+app/
+  page.tsx                    데모 홈
+  (admin)/admin/              배차 관제 · 지자체 대시보드
+  (guardian)/guardian/        자녀 — 위치 · 일정 · 리포트
+  (manager)/manager/          매니저 — 오늘 동행 · 동행 진행
+components/
+  NaverMap.tsx                지도 래퍼 (키 없으면 플레이스홀더)
+  BottomNav.tsx               모바일 하단 탭
+  icons.ts                    lucide 아이콘 단일 세트
+lib/
+  mock-data.ts                모든 시연 데이터
+```
+
+---
+
+## 문서
+
+- **[PROTOTYPE_PLAN.md](PROTOTYPE_PLAN.md)** — 프로토타입 기획서. 원인→솔루션 매핑, 3트랙 구조, 경쟁·대체재 분석(콜버스·장애인콜택시·공공 병원동행), 화면별 연출 상세, 발표 시나리오
+- **[모시GO_사업계획_요약.pdf](모시GO_사업계획_요약.pdf)** — 사업계획 요약 (BM·시장 규모·로드맵)
+
+---
+
+*2026 충주 지역정주형 특화산업 챌린지 출품작*
