@@ -180,11 +180,11 @@ export interface VehicleRoute {
   pickupStart: string; // 첫 픽업 시각
 }
 
-/** 폴리라인·마커에 쓰는 실제 색값 — globals.css의 --color-route-* 와 동일 */
+/** 폴리라인·마커에 쓰는 실제 색값 — CityBalance 계열 (그린/블루/오렌지) */
 export const ROUTE_COLORS: Record<VehicleRoute["colorVar"], string> = {
-  "route-1": "#2e7d5b",
-  "route-2": "#2b6cb0",
-  "route-3": "#d98e2b",
+  "route-1": "#3ba949",
+  "route-2": "#42a5f5",
+  "route-3": "#ffa726",
 };
 
 export interface DispatchScenario {
@@ -350,6 +350,25 @@ export const TRACK = {
   vehicle: "1호차",
   manager: "이수진 매니저",
   etaText: "09:12 병원 도착 예정",
+};
+
+// ───────────────────────────── 자녀 채널 — 정기 일정·멤버십 ─────────────────────────────
+
+/** 정기 배차 자동 등록 — 다가오는 통원 일정 (자녀 앱 /g/schedule) */
+export const UPCOMING_RIDES = [
+  { date: "7월 25일 (토)", time: "09:30", hospital: "건국대충주병원", department: "신장내과", auto: true },
+  { date: "7월 28일 (화)", time: "09:30", hospital: "건국대충주병원", department: "신장내과", auto: true },
+  { date: "7월 30일 (목)", time: "09:30", hospital: "건국대충주병원", department: "신장내과", auto: true },
+  { date: "8월 4일 (화)", time: "14:00", hospital: "충주의료원", department: "정형외과", auto: false },
+];
+
+/** 부모님 케어 멤버십 — 사업계획서 B2C 상품 (월 19,900원) */
+export const MEMBERSHIP = {
+  name: "부모님 케어 멤버십",
+  price: "월 19,900원",
+  benefits: ["정기 배차 우선권", "진료 리포트 무제한", "복약 알림"],
+  active: true,
+  since: "2026년 3월",
 };
 
 // ───────────────────────────── 지자체 대시보드 ─────────────────────────────

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import {
   GUARDIAN_ELDER_ID,
   REPORT_TEXT,
@@ -11,9 +10,8 @@ import {
 } from "@/lib/mock-data";
 
 /**
- * 동행 진행 — ★데모 2순위. (PROTOTYPE_PLAN §5.2)
- *
- * 체크리스트 6단계(픽업→…→귀가)를 노선 레일로 표시. 전부 완료하면
+ * 동행 진행 — ★데모 2순위. 의료·돌봄 공백의 해소 (PROTOTYPE_PLAN §6.2)
+ * 체크리스트 6단계를 노선 레일로 표시. 전부 완료하면
  * 음성 메모 → "AI 정리 중" 2초 → 리포트 타이핑 출력 → 자녀 전송.
  * 실제 녹음·STT·AI 호출은 없다 — 전 과정이 오프라인 연출이다.
  */
@@ -52,7 +50,7 @@ export default function TripPage() {
     return () => clearTimeout(t);
   }, [memo]);
 
-  // 리포트 타이핑 효과 — 이 연출이 "실제 AI처럼 보이는 이유"의 대부분 (§5.2)
+  // 리포트 타이핑 효과 — 이 연출이 "실제 AI처럼 보이는 이유"의 대부분 (§6.2)
   useEffect(() => {
     if (memo !== "typing") return;
     let i = 0;
@@ -73,24 +71,29 @@ export default function TripPage() {
   return (
     <div className="flex-1 flex flex-col">
       {/* 헤더 */}
-      <header className="bg-green text-white px-5 pt-5 pb-4">
-        <div className="flex items-center justify-between mb-2">
-          <Link href="/m" className="text-xs text-white/80">← 오늘 스케줄</Link>
-          <span className="text-xs text-white/80">1호차 · 이수진 매니저</span>
+      <header className="grad text-white px-5 pt-4 pb-5 sticky top-0 z-40">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="font-extrabold">동행 진행</span>
+          <span className="text-xs text-white/85">1호차 · 이수진 매니저</span>
         </div>
-        <h1 className="font-serif font-bold text-xl">
-          {elder.name} 어르신 <span className="font-sans text-sm font-normal text-white/85">{elder.age}세 · {elder.ward}</span>
-        </h1>
-        <p className="text-sm text-white/85">건국대충주병원 신장내과 · 09:30 진료</p>
+        <p className="text-[15px] font-bold">
+          {elder.name} 어르신
+          <span className="ml-1.5 text-[12px] font-normal text-white/85">
+            {elder.age}세 · {elder.ward} · 건국대충주병원 신장내과 09:30
+          </span>
+        </p>
       </header>
 
       {/* 케어노트 */}
-      <section className="mx-4 -mt-3 rounded-xl bg-card border border-line shadow-sm px-4 py-3">
-        <p className="text-[11px] font-bold text-green tracking-wider mb-1.5">케어노트</p>
-        <ul className="space-y-1">
+      <section className="bg-card mx-4 -mt-2.5 rounded-2xl shadow-card-md px-5 py-4 relative z-40">
+        <p className="text-[12px] font-bold text-primary-dark mb-2 flex items-center gap-1.5">
+          <span className="w-6 h-6 bg-primary-light rounded-lg grid place-items-center text-[13px]">📌</span>
+          케어노트
+        </p>
+        <ul className="space-y-1.5">
           {elder.careNotes.map((n) => (
             <li key={n} className="text-[13px] flex gap-2">
-              <span className="text-amber font-bold shrink-0">!</span>
+              <span className="text-orange font-extrabold shrink-0">!</span>
               {n}
             </li>
           ))}
@@ -98,21 +101,27 @@ export default function TripPage() {
       </section>
 
       {/* 체크리스트 — 노선 레일 */}
-      <section className="px-6 pt-6 pb-2">
+      <section className="bg-card mx-4 mt-4 rounded-2xl shadow-card px-6 py-5">
+        <p className="text-[12px] font-bold text-sub mb-4">동행 체크리스트</p>
         <div className="rail">
           {TRIP_STEPS.map((step, i) => {
             const state = i < stepIdx ? "done" : i === stepIdx ? "active" : "";
             return (
               <div key={step} className={`rail-stop ${state}`}>
-                <div className="flex items-center gap-2 min-h-6">
-                  <span className={`text-[15px] ${i < stepIdx ? "font-bold text-green" : i === stepIdx ? "font-bold" : "text-gray"}`}>
+                <div className="flex items-center gap-2 min-h-9">
+                  <span
+                    className={`text-[15px] ${
+                      i < stepIdx ? "font-bold text-primary-dark" : i === stepIdx ? "font-bold" : "text-faint"
+                    }`}
+                  >
                     {step}
                   </span>
-                  {i < stepIdx && <span className="text-[11px] text-gray">완료</span>}
+                  {i < stepIdx && <span className="text-[11px] text-faint">완료</span>}
                   {i === stepIdx && !allDone && (
                     <button
                       onClick={completeStep}
-                      className="ml-auto h-9 px-4 rounded-lg bg-green text-white text-[13px] font-bold active:scale-[.97] transition"
+                      className="ml-auto h-9 px-4 rounded-[10px] grad text-white text-[13px] font-bold
+                        shadow-[0_2px_8px_rgba(106,179,77,0.35)] active:scale-[.97] transition"
                     >
                       {step} 완료
                     </button>
@@ -126,17 +135,17 @@ export default function TripPage() {
 
       {/* 음성 메모 → 리포트 */}
       {memo !== "hidden" && (
-        <section className="px-4 pb-8 space-y-3 animate-[rise_.45s_ease_both]">
+        <section className="px-4 pt-4 pb-6 space-y-3 animate-[rise_.45s_ease_both]">
           {(memo === "ready" || memo === "recording") && (
-            <div className="rounded-xl bg-card border border-line p-4 text-center">
-              <p className="text-sm font-bold mb-1">동행 마무리 — 음성 메모</p>
-              <p className="text-xs text-gray mb-4">오늘 있었던 일을 말로 남기면, AI가 자녀 리포트로 정리합니다</p>
+            <div className="bg-card rounded-2xl shadow-card p-5 text-center">
+              <p className="text-[15px] font-bold mb-1">동행 마무리 — 음성 메모</p>
+              <p className="text-xs text-sub mb-4">오늘 있었던 일을 말로 남기면, AI가 자녀 리포트로 정리합니다</p>
               {memo === "recording" && (
                 <div className="flex items-center justify-center gap-1 mb-3 h-8" aria-hidden>
                   {[14, 22, 30, 18, 26, 12, 24, 16].map((h, i) => (
                     <span
                       key={i}
-                      className="w-1.5 rounded-full bg-green animate-pulse"
+                      className="w-1.5 rounded-full bg-primary animate-pulse"
                       style={{ height: h, animationDelay: `${i * 90}ms`, animationDuration: ".7s" }}
                     />
                   ))}
@@ -144,33 +153,35 @@ export default function TripPage() {
               )}
               <button
                 onClick={() => setMemo(memo === "ready" ? "recording" : "processing")}
-                className={`w-16 h-16 rounded-full text-white text-2xl shadow-lg active:scale-95 transition
-                  ${memo === "recording" ? "bg-[#c0392b]" : "bg-green"}`}
+                className={`w-16 h-16 rounded-full text-white text-2xl shadow-card-lg active:scale-95 transition
+                  ${memo === "recording" ? "bg-red" : "grad"}`}
                 aria-label={memo === "recording" ? "녹음 종료" : "녹음 시작"}
               >
                 {memo === "recording" ? "■" : "🎙"}
               </button>
-              <p className="tnum text-sm text-gray mt-2">{memo === "recording" ? mmss : "눌러서 녹음"}</p>
+              <p className="tnum text-sm text-sub mt-2">{memo === "recording" ? mmss : "눌러서 녹음"}</p>
             </div>
           )}
 
           {memo === "processing" && (
-            <div className="rounded-xl bg-card border border-line p-6 text-center">
-              <span className="inline-block w-5 h-5 rounded-full border-2 border-green/30 border-t-green animate-spin mb-2" />
-              <p className="text-sm font-bold">AI가 리포트를 정리하고 있습니다…</p>
-              <p className="text-xs text-gray mt-1">음성 인식 → 사실 확인 → 자녀용 문장 정리</p>
+            <div className="bg-card rounded-2xl shadow-card p-6 text-center">
+              <span className="inline-block w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin mb-2" />
+              <p className="text-[15px] font-bold">AI가 리포트를 정리하고 있습니다…</p>
+              <p className="text-xs text-sub mt-1">음성 인식 → 사실 확인 → 자녀용 문장 정리</p>
             </div>
           )}
 
           {(memo === "typing" || memo === "done") && (
             <>
-              <div className="rounded-xl bg-paper border border-line px-4 py-3">
-                <p className="text-[11px] font-bold text-gray tracking-wider mb-1">음성 메모 원문</p>
-                <p className="text-[13px] text-gray leading-relaxed">&ldquo;{VOICE_MEMO_PREVIEW}&rdquo;</p>
+              <div className="bg-bg border border-line rounded-2xl px-5 py-3.5">
+                <p className="text-[11px] font-bold text-faint mb-1">음성 메모 원문</p>
+                <p className="text-[13px] text-sub leading-relaxed">&ldquo;{VOICE_MEMO_PREVIEW}&rdquo;</p>
               </div>
-              <div ref={reportRef} className="rounded-xl bg-card border border-green/40 px-4 py-4">
-                <p className="text-[11px] font-bold text-green tracking-wider mb-2">AI 정리 리포트 — 자녀 전송용</p>
-                <pre className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed">
+              <div ref={reportRef} className="bg-card rounded-2xl shadow-card overflow-hidden">
+                <header className="px-5 py-3 bg-primary-light">
+                  <p className="text-[12px] font-bold text-primary-dark">✨ AI 정리 리포트 — 자녀 전송용</p>
+                </header>
+                <pre className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed px-5 py-4">
                   {displayed}
                   {memo === "typing" && <span className="animate-pulse">▍</span>}
                 </pre>
@@ -179,7 +190,8 @@ export default function TripPage() {
                 <button
                   onClick={() => setSent(true)}
                   disabled={sent}
-                  className="w-full h-12 rounded-xl bg-deep text-white font-bold text-[15px] active:scale-[.99] transition disabled:bg-green"
+                  className={`w-full h-13 rounded-2xl text-white font-bold text-[15px] active:scale-[.99] transition
+                    ${sent ? "bg-primary-dark" : "grad shadow-[0_4px_16px_rgba(106,179,77,0.4)]"}`}
                 >
                   {sent ? `✓ ${elder.guardian.name} 님(${elder.guardian.relation})에게 전송 완료` : "자녀에게 리포트 전송"}
                 </button>

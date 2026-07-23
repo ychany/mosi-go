@@ -2,8 +2,8 @@ import Link from "next/link";
 import { RESERVATIONS, TODAY, elderById } from "@/lib/mock-data";
 
 /**
- * 매니저 — 오늘 스케줄. 1호차(이수진 매니저) 기준.
- * 첫 어르신(김영자)이 진행 중 → /m/trip 으로 이어진다.
+ * 매니저 — 오늘 동행. 어르신 트랙의 현장 인터페이스 (PROTOTYPE_PLAN §1.2).
+ * 어르신은 앱을 쓰지 않는다 — 어르신의 화면은 매니저의 손에 들려 있다.
  */
 
 const RUN = [
@@ -15,44 +15,54 @@ const RUN = [
 export default function ManagerHome() {
   return (
     <div className="flex-1 flex flex-col">
-      <header className="bg-green text-white px-5 pt-5 pb-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="font-serif font-bold">
-            모시<span className="text-amber">GO</span>
-            <span className="ml-2 font-sans text-xs font-normal text-white/80">매니저</span>
-          </span>
-          <span className="text-xs text-white/80">이수진 매니저</span>
-        </div>
-        <h1 className="font-bold text-lg">오늘 동행 · 1호차</h1>
-        <p className="text-sm text-white/85">{TODAY} · 건국대충주병원 방면 3인</p>
+      <header className="grad text-white px-5 h-16 flex items-center justify-between sticky top-0 z-40">
+        <span className="font-extrabold text-lg flex items-center gap-2">🚐 모시GO 매니저</span>
+        <span className="text-sm text-white/90">👤 이수진</span>
       </header>
 
-      <div className="flex-1 px-4 py-4 space-y-3">
-        {RUN.map(({ elderId, pickup, status }) => {
+      {/* 히어로 카드 — 오늘 운행 요약 */}
+      <section className="grad hero-deco text-white mx-4 mt-4 p-6 rounded-2xl shadow-[0_4px_16px_rgba(106,179,77,0.3)]">
+        <p className="text-[13px] font-medium opacity-90">{TODAY} · 1호차</p>
+        <p className="text-[2rem] font-extrabold tracking-tight">3인 합승 동행</p>
+        <div className="flex items-center gap-2 mt-3 text-[13px] opacity-90">
+          <span>1/3 진행</span>
+          <div className="flex-1 h-1 bg-white/30 rounded overflow-hidden">
+            <div className="h-full bg-white rounded" style={{ width: "33%" }} />
+          </div>
+        </div>
+        <p className="text-[11px] opacity-80 mt-1.5">건국대충주병원 방면 · 첫 픽업 08:20</p>
+      </section>
+
+      {/* 픽업 순서 */}
+      <h2 className="text-base font-bold px-5 pt-5 pb-2">픽업 순서</h2>
+      <div className="mx-4 space-y-2.5">
+        {RUN.map(({ elderId, pickup, status }, i) => {
           const e = elderById(elderId);
           const r = RESERVATIONS.find((x) => x.elderId === elderId);
           const active = status === "진행 중";
           const card = (
             <div
-              className={`rounded-xl border px-4 py-3.5 flex items-center gap-3 bg-card
-                ${active ? "border-green shadow-sm" : "border-line"}`}
+              className={`bg-card px-5 py-4 rounded-2xl flex items-center gap-3 transition
+                ${active ? "shadow-card-md ring-2 ring-primary" : "shadow-card"}`}
             >
-              <div className="text-center shrink-0 w-12">
-                <p className="tnum text-sm font-bold">{pickup}</p>
-                <p className="text-[10px] text-gray">픽업</p>
+              <div
+                className={`w-11 h-11 rounded-xl grid place-items-center text-[15px] font-extrabold shrink-0
+                  ${active ? "grad text-white" : "bg-primary-light text-primary-dark"}`}
+              >
+                {i + 1}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[15px] font-bold">
                   {e.name}
-                  <span className="ml-1.5 font-normal text-xs text-gray">{e.age}세 · {e.ward}</span>
+                  <span className="ml-1.5 font-normal text-xs text-sub">{e.age}세 · {e.ward}</span>
                 </p>
-                <p className="text-xs text-gray truncate">
-                  {r?.department} {r?.time} · 케어노트 {e.careNotes.length}건
+                <p className="text-xs text-sub mt-0.5 truncate tnum">
+                  {pickup} 픽업 · {r?.department} {r?.time} · 케어노트 {e.careNotes.length}건
                 </p>
               </div>
               <span
                 className={`text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0
-                  ${active ? "bg-green text-white" : "bg-paper text-gray border border-line"}`}
+                  ${active ? "bg-primary-light text-primary-dark" : "bg-bg text-faint border border-line"}`}
               >
                 {status}
               </span>
@@ -66,11 +76,11 @@ export default function ManagerHome() {
             <div key={elderId}>{card}</div>
           );
         })}
-
-        <p className="text-[11px] text-gray text-center pt-2">
-          진행 중인 동행을 누르면 체크리스트로 이동합니다
-        </p>
       </div>
+
+      <p className="text-[12px] text-faint text-center pt-4 pb-5">
+        진행 중인 동행을 누르면 체크리스트로 이동합니다
+      </p>
     </div>
   );
 }

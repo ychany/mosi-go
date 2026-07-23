@@ -74,7 +74,7 @@ function loadScript(): Promise<boolean> {
 
 function markerHtml(m: MapMarker): string {
   const size = m.major ? 34 : 18;
-  const color = m.color ?? "var(--color-green)";
+  const color = m.color ?? "#6ab34d";
   const glyph = m.glyph
     ? `<span style="font-size:${m.major ? 16 : 10}px;line-height:1">${m.glyph}</span>`
     : "";
@@ -156,10 +156,10 @@ export default function NaverMap({ center, zoom, markers = [], polylines = [], c
   }, [status, markers, polylines]);
 
   return (
-    <div ref={containerRef} className={`relative bg-[#dfe6df] ${className ?? ""}`}>
+    <div ref={containerRef} className={`relative bg-[#e8ede5] ${className ?? ""}`}>
       {status !== "ready" && (
         <div className="absolute inset-0 grid place-items-center">
-          <div className="text-center text-gray text-sm px-6">
+          <div className="text-center text-sub text-sm px-6">
             <p className="font-bold mb-1">지도 영역</p>
             {status === "loading" ? (
               <p>지도를 불러오는 중…</p>
