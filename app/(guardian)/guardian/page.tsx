@@ -3,8 +3,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import NaverMap, { type MapMarker } from "@/components/NaverMap";
-import { BusFront, Calendar, ChevronRight, MARKER_HOSPITAL, MARKER_VEHICLE, Stethoscope, User } from "@/components/icons";
-import { GUARDIAN_ELDER_ID, HOSPITALS, TRACK, elderById } from "@/lib/mock-data";
+import { Bell, BusFront, Calendar, ChevronRight, MARKER_HOSPITAL, MARKER_VEHICLE, Stethoscope, User } from "@/components/icons";
+import { NotiSheet, PushBanner } from "@/components/PushBanner";
+import {
+  GUARDIAN_ELDER_ID,
+  HOSPITALS,
+  NOTI_HISTORY,
+  PHASE_NOTIFICATIONS,
+  TRACK,
+  elderById,
+  type PushNotification,
+} from "@/lib/mock-data";
 
 /**
  * 자녀 — 홈 (실시간 위치). 돌봄 공백의 해소 (PROTOTYPE_PLAN §6.3)
@@ -17,9 +26,15 @@ const PHASES = TRACK.phases;
 const LAST_PATH_IDX = TRACK.path.length - 1;
 
 export default function GuardianHome() {
-  // tick: 0..LAST_PATH_IDX 는 주행, 이후 +1 진료 중, +2 귀가 중
+  // tick: 0..LAST_PATH_IDX 는 주행, 이후 진료 중 → 진료 지연 → 귀가 중
   const [tick, setTick] = useState(0);
-  const MAX_TICK = LAST_PATH_IDX + 2;
+  const MAX_TICK = LAST_PATH_IDX + 3;
+
+  // 푸시 알림 (§6.3-1) — 실제 FCM 없음, 상태 전이 시 배너 연출
+  const [banner, setBanner] = useState<PushNotification | null>(null);
+  const [inbox, setInbox] = useState<PushNotification[]>(NOTI_HISTORY);
+  const [unread, setUnread] = useState(NOTI_HISTORY.length);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setTick((i) => Math.min(i + 1, MAX_TICK)), 2000);
@@ -27,11 +42,22 @@ export default function GuardianHome() {
   }, [MAX_TICK]);
 
   const posIdx = Math.min(tick, LAST_PATH_IDX);
-  const phaseIdx =
-    tick >= LAST_PATH_IDX + 2 ? 3 : tick >= LAST_PATH_IDX + 1 ? 2 : tick >= LAST_PATH_IDX ? 1 : 0;
+  const phaseIdx = Math.max(0, Math.min(tick - LAST_PATH_IDX + 1, PHASES.length - 1));
   const phase = PHASES[phaseIdx];
   const atHospital = phaseIdx >= 1;
+  const delayed = phase.label === "진료 지연";
   const progress = Math.round((tick / MAX_TICK) * 100);
+
+  // 단계가 바뀌면 해당 알림을 배너로 띄우고 3초 후 자동 해제
+  useEffect(() => {
+    const noti = PHASE_NOTIFICATIONS[phaseIdx];
+    if (!noti) return;
+    setBanner(noti);
+    setInbox((prev) => (prev.some((n) => n.id === noti.id) ? prev : [noti, ...prev]));
+    setUnread((n) => n + 1);
+    const t = setTimeout(() => setBanner(null), 3000);
+    return () => clearTimeout(t);
+  }, [phaseIdx]);
 
   const markers: MapMarker[] = [
     { position: TRACK.path[0], color: "#9e9e9e", label: "자택" },
@@ -41,13 +67,33 @@ export default function GuardianHome() {
 
   return (
     <div className="flex-1 flex flex-col">
+      {banner && <PushBanner noti={banner} onClose={() => setBanner(null)} />}
+      {sheetOpen && <NotiSheet items={inbox} onClose={() => setSheetOpen(false)} />}
+
       {/* 그라데이션 헤더 */}
       <header className="grad text-white px-5 h-16 flex items-center justify-between sticky top-0 z-40">
         <span className="font-extrabold text-lg flex items-center gap-2">
           <BusFront size={22} />
           모시GO
         </span>
-        <span className="text-sm text-white/90 flex items-center gap-1.5"><User size={16} />{elder.guardian.name} 님</span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              setSheetOpen(true);
+              setUnread(0);
+            }}
+            className="relative p-1 active:scale-95 transition"
+            aria-label={`알림 ${unread}건`}
+          >
+            <Bell size={20} />
+            {unread > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-red text-white text-[10px] font-extrabold grid place-items-center">
+                {unread}
+              </span>
+            )}
+          </button>
+          <span className="text-sm text-white/90 flex items-center gap-1.5"><User size={16} />{elder.guardian.name} 님</span>
+        </div>
       </header>
 
       {/* 히어로 카드 — 오늘 동행 현황 */}
@@ -103,11 +149,13 @@ export default function GuardianHome() {
       </section>
 
       {/* 차량 병원 대기 안내 — 재호출이 필요 없다는 것이 핵심 (§1.12) */}
-      {phaseIdx === 2 && (
-        <div className="mx-4 mt-3 rounded-2xl bg-primary-light px-4 py-3 flex items-start gap-2.5 animate-[rise_.4s_ease_both]">
+      {(phaseIdx === 2 || delayed) && (
+        <div className={`mx-4 mt-3 rounded-2xl px-4 py-3 flex items-start gap-2.5 animate-[rise_.4s_ease_both] ${delayed ? "bg-[#fff3e0]" : "bg-primary-light"}`}>
           <BusFront size={16} className="shrink-0 mt-0.5 text-primary-dark" />
           <p className="text-[12.5px] leading-snug">
-            <b className="text-primary-dark">차량이 병원에서 대기 중입니다.</b>
+            <b className="text-primary-dark">
+              {delayed ? "진료가 길어지고 있습니다 — 차량은 계속 대기합니다." : "차량이 병원에서 대기 중입니다."}
+            </b>
             <br />
             진료가 끝나면 5분 내 탑승합니다 — 따로 부르실 필요 없습니다.
           </p>

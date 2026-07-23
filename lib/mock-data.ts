@@ -446,7 +446,7 @@ export const CALL_TRANSCRIPT = [
 export const GUARDIAN_ELDER_ID = "e1"; // 자녀 화면의 주인공: 김영자 어르신 (보호자 김성호)
 
 export interface TrackPhase {
-  label: "이동 중" | "병원 도착" | "진료 중" | "귀가 중";
+  label: "이동 중" | "병원 도착" | "진료 중" | "진료 지연" | "귀가 중";
   /** 이 단계가 시작되는 경로 인덱스 */
   fromIndex: number;
   /** 자녀 화면에 노출할 부가 설명 */
@@ -464,7 +464,8 @@ export const TRACK = {
     { label: "이동 중", fromIndex: 0, note: "1호차 · 3인 합승 운행" },
     { label: "병원 도착", fromIndex: 7, note: "정문 하차 · 접수 진행" },
     { label: "진료 중", fromIndex: 8, note: "차량이 병원 주차장에서 대기 중" },
-    { label: "귀가 중", fromIndex: 9, note: "진료 종료 5분 내 탑승 완료" },
+    { label: "진료 지연", fromIndex: 9, note: "예상보다 길어지는 중 · 차량 대기 유지" },
+    { label: "귀가 중", fromIndex: 10, note: "진료 종료 5분 내 탑승 완료" },
   ] satisfies TrackPhase[],
   vehicle: "1호차",
   driver: "이수진 기사",
@@ -509,6 +510,69 @@ export const OPERATOR_STATS = [
 export const OPERATOR_NOTICES = [
   { time: "07:55", icon: "cone", text: "산척면 19번 국도 부분 공사 — 기사 3인에게 우회 안내 완료" },
   { time: "08:02", icon: "phone", text: "김영자 어르신 보호자 요청: 픽업 시 현관 벨 대신 전화" },
+];
+
+// ───────────────────────────── 자녀 푸시 알림 (§6.3-1) ─────────────────────────────
+//
+// 열어야 보이면 조회지 보고가 아니다 — 자녀가 아무것도 하지 않아도 폰이 울리는 것이 핵심.
+// 수신자는 자녀뿐이다 (어르신은 앱을 쓰지 않는다). 의료 정보는 담지 않고 운행 사실·일정만 전달한다.
+
+export type NotiTone = "info" | "good" | "warn";
+
+export interface PushNotification {
+  id: string;
+  time: string;
+  title: string;
+  body: string;
+  tone: NotiTone;
+  /** 탭 시 이동할 경로 */
+  href?: string;
+}
+
+/** 전날 저녁 예고 — 화면 진입 전 이미 받아둔 알림 */
+export const NOTI_HISTORY: PushNotification[] = [
+  {
+    id: "n0",
+    time: "어제 20:10",
+    title: "내일 통원 예정입니다",
+    body: "09:20 픽업 · 건국대충주병원 신장내과 09:30 진료 · 1호차 배차 완료",
+    tone: "info",
+    href: "/guardian/schedule",
+  },
+];
+
+/** 단계 전이 시 발송되는 알림 — TRACK.phases 인덱스와 1:1 대응 */
+export const PHASE_NOTIFICATIONS: (PushNotification | null)[] = [
+  {
+    id: "n1",
+    time: "09:22",
+    title: "어머니가 차량에 탑승하셨습니다",
+    body: "09:22 산척면 자택 출발 · 병원 도착 예정 09:45",
+    tone: "good",
+  },
+  {
+    id: "n2",
+    time: "09:43",
+    title: "병원에 도착하셨습니다",
+    body: "건국대충주병원 · 차량은 병원에서 대기합니다",
+    tone: "good",
+  },
+  null, // 진료 중 — 알림 없음 (하루 4~5건 상한)
+  {
+    id: "n3",
+    time: "12:15",
+    title: "진료가 예상보다 길어지고 있습니다",
+    body: "차량은 병원에서 대기 중이며, 종료 시 바로 귀가해 드립니다",
+    tone: "warn",
+  },
+  {
+    id: "n4",
+    time: "12:40",
+    title: "어머니가 자택에 도착하셨습니다",
+    body: "오늘의 통원 리포트가 준비되었습니다",
+    tone: "good",
+    href: "/guardian/report",
+  },
 ];
 
 // ───────────────────────────── 자녀 채널 — 정기 일정·멤버십 ─────────────────────────────

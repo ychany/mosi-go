@@ -50,6 +50,7 @@ export {
   Sparkles,
   Square,
   ChevronRight,
+  X,
   // 지표
   LayoutDashboard,
   Home,
