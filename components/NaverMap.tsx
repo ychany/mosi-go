@@ -94,11 +94,11 @@ function loadScript(): Promise<boolean> {
   if (!KEY) return Promise.resolve(false);
   if (!scriptPromise) {
     scriptPromise = (async () => {
-      if (await tryLoad("ncpClientId")) return true;
-      // 실패한 스크립트·전역을 정리하고 신형 파라미터로 재시도
+      // 신형(VPC Maps) 파라미터 우선 — 실패 시 구형으로 재시도
+      if (await tryLoad("ncpKeyId")) return true;
       document.querySelectorAll("script[data-naver-param]").forEach((el) => el.remove());
       delete (window as { naver?: unknown }).naver;
-      return tryLoad("ncpKeyId");
+      return tryLoad("ncpClientId");
     })();
   }
   return scriptPromise;
