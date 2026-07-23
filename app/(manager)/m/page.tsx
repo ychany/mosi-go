@@ -1,18 +1,51 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { RESERVATIONS, TODAY, elderById } from "@/lib/mock-data";
+import NaverMap, { type MapMarker } from "@/components/NaverMap";
+import {
+  DISPATCH_SCENARIOS,
+  HOSPITALS,
+  MANAGER_NOTICES,
+  RESERVATIONS,
+  TODAY,
+  elderById,
+} from "@/lib/mock-data";
 
 /**
  * 매니저 — 오늘 동행. 어르신 트랙의 현장 인터페이스 (PROTOTYPE_PLAN §1.2).
- * 어르신은 앱을 쓰지 않는다 — 어르신의 화면은 매니저의 손에 들려 있다.
+ * 경로 지도·지금 할 일·케어노트 아코디언·관제 공지 — 현장에서 실제로 쓰는 도구 화면.
  */
 
-const RUN = [
+// 오늘 배정: 기본 시나리오의 1호차
+const RUN = DISPATCH_SCENARIOS[0].vehicles[0];
+const PICKUPS = [
   { elderId: "e1", pickup: "08:20", status: "진행 중" as const },
   { elderId: "e2", pickup: "08:35", status: "대기" as const },
   { elderId: "e3", pickup: "08:50", status: "대기" as const },
 ];
 
+const MAP_MARKERS: MapMarker[] = [
+  ...PICKUPS.map((p, i) => ({
+    position: elderById(p.elderId).coord,
+    color: "#3ba949",
+    major: true,
+    glyph: String(i + 1),
+    label: elderById(p.elderId).name,
+  })),
+  {
+    position: HOSPITALS[RUN.hospital].coord,
+    color: "#212121",
+    major: true,
+    glyph: "＋",
+    label: RUN.hospital,
+  },
+];
+
 export default function ManagerHome() {
+  const [openNote, setOpenNote] = useState<string | null>("e1");
+  const current = elderById("e1");
+
   return (
     <div className="flex-1 flex flex-col">
       <header className="grad text-white px-5 h-16 flex items-center justify-between sticky top-0 z-40">
@@ -20,9 +53,9 @@ export default function ManagerHome() {
         <span className="text-sm text-white/90">👤 이수진</span>
       </header>
 
-      {/* 히어로 카드 — 오늘 운행 요약 */}
+      {/* 히어로 — 오늘 운행 요약 */}
       <section className="grad hero-deco text-white mx-4 mt-4 p-6 rounded-2xl shadow-[0_4px_16px_rgba(106,179,77,0.3)]">
-        <p className="text-[13px] font-medium opacity-90">{TODAY} · 1호차</p>
+        <p className="text-[13px] font-medium opacity-90">{TODAY} · {RUN.vehicle}</p>
         <p className="text-[2rem] font-extrabold tracking-tight">3인 합승 동행</p>
         <div className="flex items-center gap-2 mt-3 text-[13px] opacity-90">
           <span>1/3 진행</span>
@@ -30,57 +63,130 @@ export default function ManagerHome() {
             <div className="h-full bg-white rounded" style={{ width: "33%" }} />
           </div>
         </div>
-        <p className="text-[11px] opacity-80 mt-1.5">건국대충주병원 방면 · 첫 픽업 08:20</p>
+        <p className="tnum text-[11px] opacity-80 mt-1.5">
+          {RUN.hospital} 방면 · ⏱ {RUN.durationMin}분 · {RUN.distanceKm}km · 좌석 {RUN.elderIds.length}/{RUN.seats}
+        </p>
       </section>
 
-      {/* 픽업 순서 */}
+      {/* 지금 할 일 */}
+      <section className="bg-card mx-4 mt-4 rounded-2xl shadow-card-md ring-2 ring-primary px-5 py-4">
+        <p className="text-[11px] font-bold text-primary-dark tracking-wider mb-1.5">지금 할 일</p>
+        <div className="flex items-center gap-3">
+          <div className="grad w-11 h-11 rounded-xl grid place-items-center text-white text-[15px] font-extrabold shrink-0">
+            1
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[15px] font-bold tnum">08:20 · {current.name} 어르신 픽업</p>
+            <p className="text-xs text-sub">{current.ward} 자택 · 09:30 신장내과 진료</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          <button className="h-11 rounded-xl bg-bg border border-line text-[13px] font-bold active:scale-[.98] transition">
+            ☎ 어르신 전화
+          </button>
+          <button className="h-11 rounded-xl bg-bg border border-line text-[13px] font-bold active:scale-[.98] transition">
+            🧭 내비 연결
+          </button>
+        </div>
+        <Link
+          href="/m/trip"
+          className="mt-2 grad flex items-center justify-center h-12 rounded-xl text-white font-bold text-[15px]
+            shadow-[0_4px_16px_rgba(106,179,77,0.35)] active:scale-[.99] transition"
+        >
+          동행 체크리스트 시작 →
+        </Link>
+      </section>
+
+      {/* 오늘 경로 */}
+      <div className="flex items-center justify-between px-5 pt-5 pb-2">
+        <h2 className="text-base font-bold">오늘 경로</h2>
+        <span className="tnum text-[12px] text-sub">픽업 3곳 → {HOSPITALS[RUN.hospital].short}</span>
+      </div>
+      <div className="mx-4 rounded-2xl overflow-hidden shadow-card">
+        <NaverMap
+          center={[37.03, 127.95]}
+          zoom={10}
+          markers={MAP_MARKERS}
+          polylines={[{ path: RUN.path, color: "#3ba949" }]}
+          className="h-56"
+        />
+      </div>
+
+      {/* 픽업 순서 + 케어노트 아코디언 */}
       <h2 className="text-base font-bold px-5 pt-5 pb-2">픽업 순서</h2>
       <div className="mx-4 space-y-2.5">
-        {RUN.map(({ elderId, pickup, status }, i) => {
+        {PICKUPS.map(({ elderId, pickup, status }, i) => {
           const e = elderById(elderId);
           const r = RESERVATIONS.find((x) => x.elderId === elderId);
           const active = status === "진행 중";
-          const card = (
+          const open = openNote === elderId;
+          return (
             <div
-              className={`bg-card px-5 py-4 rounded-2xl flex items-center gap-3 transition
+              key={elderId}
+              className={`bg-card rounded-2xl overflow-hidden transition
                 ${active ? "shadow-card-md ring-2 ring-primary" : "shadow-card"}`}
             >
-              <div
-                className={`w-11 h-11 rounded-xl grid place-items-center text-[15px] font-extrabold shrink-0
-                  ${active ? "grad text-white" : "bg-primary-light text-primary-dark"}`}
+              <button
+                onClick={() => setOpenNote(open ? null : elderId)}
+                className="w-full px-5 py-4 flex items-center gap-3 text-left"
               >
-                {i + 1}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[15px] font-bold">
-                  {e.name}
-                  <span className="ml-1.5 font-normal text-xs text-sub">{e.age}세 · {e.ward}</span>
-                </p>
-                <p className="text-xs text-sub mt-0.5 truncate tnum">
-                  {pickup} 픽업 · {r?.department} {r?.time} · 케어노트 {e.careNotes.length}건
-                </p>
-              </div>
-              <span
-                className={`text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0
-                  ${active ? "bg-primary-light text-primary-dark" : "bg-bg text-faint border border-line"}`}
-              >
-                {status}
-              </span>
+                <div
+                  className={`w-11 h-11 rounded-xl grid place-items-center text-[15px] font-extrabold shrink-0
+                    ${active ? "grad text-white" : "bg-primary-light text-primary-dark"}`}
+                >
+                  {i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[15px] font-bold">
+                    {e.name}
+                    <span className="ml-1.5 font-normal text-xs text-sub">{e.age}세 · {e.ward}</span>
+                  </p>
+                  <p className="text-xs text-sub truncate tnum">
+                    {pickup} 픽업 · {r?.department} {r?.time} · {e.condition}
+                  </p>
+                </div>
+                <span
+                  className={`text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0
+                    ${active ? "bg-primary-light text-primary-dark" : "bg-bg text-faint border border-line"}`}
+                >
+                  {status}
+                </span>
+                <span className={`text-faint text-xs transition-transform ${open ? "rotate-90" : ""}`}>›</span>
+              </button>
+              {open && (
+                <div className="px-5 pb-4 -mt-1 animate-[rise_.3s_ease_both]">
+                  <div className="rounded-xl bg-bg px-4 py-3">
+                    <p className="text-[11px] font-bold text-primary-dark mb-1.5">📌 케어노트</p>
+                    <ul className="space-y-1">
+                      {e.careNotes.map((n) => (
+                        <li key={n} className="text-[13px] flex gap-2">
+                          <span className="text-orange font-extrabold shrink-0">!</span>
+                          {n}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-[11px] text-faint mt-2">
+                      보호자: {e.guardian.name} ({e.guardian.relation} · {e.guardian.residence})
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-          );
-          return active ? (
-            <Link key={elderId} href="/m/trip" className="block active:scale-[.99] transition">
-              {card}
-            </Link>
-          ) : (
-            <div key={elderId}>{card}</div>
           );
         })}
       </div>
 
-      <p className="text-[12px] text-faint text-center pt-4 pb-5">
-        진행 중인 동행을 누르면 체크리스트로 이동합니다
-      </p>
+      {/* 관제 공지 */}
+      <h2 className="text-base font-bold px-5 pt-5 pb-2">관제 공지</h2>
+      <div className="mx-4 mb-6 space-y-2">
+        {MANAGER_NOTICES.map((n) => (
+          <div key={n.time} className="bg-card rounded-2xl shadow-card px-4 py-3 flex items-start gap-2.5">
+            <span className="text-base shrink-0">{n.icon}</span>
+            <p className="text-[13px] leading-snug flex-1">{n.text}</p>
+            <span className="tnum text-[11px] text-faint shrink-0">{n.time}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
