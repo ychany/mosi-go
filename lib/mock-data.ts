@@ -178,6 +178,10 @@ export interface VehicleRoute {
   colorVar: "route-1" | "route-2" | "route-3";
   path: LatLng[];
   pickupStart: string; // 첫 픽업 시각
+  manager: string;
+  seats: number; // 차량 정원
+  durationMin: number; // 예상 소요(분)
+  distanceKm: number; // 예상 거리
 }
 
 /** 폴리라인·마커에 쓰는 실제 색값 — CityBalance 계열 (그린/블루/오렌지) */
@@ -206,6 +210,10 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e1", "e2", "e3"], // 산척·산척·엄정 → 건대
         colorVar: "route-1",
         pickupStart: "08:20",
+        manager: "이수진 매니저",
+        seats: 4,
+        durationMin: 52,
+        distanceKm: 28.4,
         path: [
           [37.084, 128.001], [37.077, 127.994], [37.082, 127.97],
           [37.089, 127.948], [37.05, 127.935], [37.01, 127.93],
@@ -218,6 +226,10 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e4", "e5", "e7"], // 소태·소태·노은 → 의료원
         colorVar: "route-2",
         pickupStart: "08:40",
+        manager: "박지훈 매니저",
+        seats: 4,
+        durationMin: 58,
+        distanceKm: 33.1,
         path: [
           [37.075, 127.872], [37.082, 127.881], [37.052, 127.86],
           [37.052, 127.791], [37.02, 127.85], [37.0, 127.9],
@@ -230,6 +242,10 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e6", "e8"], // 앙성·앙성 → 건대
         colorVar: "route-3",
         pickupStart: "08:10",
+        manager: "김도현 매니저",
+        seats: 4,
+        durationMin: 47,
+        distanceKm: 30.6,
         path: [
           [37.119, 127.812], [37.111, 127.821], [37.07, 127.83],
           [37.02, 127.86], [36.99, 127.9], [36.965, 127.925],
@@ -248,6 +264,10 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e1", "e3"],
         colorVar: "route-1",
         pickupStart: "08:35",
+        manager: "이수진 매니저",
+        seats: 4,
+        durationMin: 41,
+        distanceKm: 22.0,
         path: [
           [37.084, 128.001], [37.089, 127.948], [37.05, 127.935],
           [37.01, 127.93], [36.965, 127.925],
@@ -259,6 +279,10 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e4", "e5", "e7"],
         colorVar: "route-2",
         pickupStart: "08:40",
+        manager: "박지훈 매니저",
+        seats: 4,
+        durationMin: 58,
+        distanceKm: 33.1,
         path: [
           [37.075, 127.872], [37.082, 127.881], [37.052, 127.86],
           [37.052, 127.791], [37.02, 127.85], [37.0, 127.9],
@@ -271,6 +295,10 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e6", "e8"],
         colorVar: "route-3",
         pickupStart: "08:10",
+        manager: "김도현 매니저",
+        seats: 4,
+        durationMin: 47,
+        distanceKm: 30.6,
         path: [
           [37.119, 127.812], [37.111, 127.821], [37.07, 127.83],
           [37.02, 127.86], [36.99, 127.9], [36.965, 127.925],
@@ -278,6 +306,18 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
       },
     ],
   },
+];
+
+/** 관제 라이브 피드 — 배차 확정 후 지도 위 티커에 롤링되는 이벤트 (연출) */
+export const LIVE_FEED = [
+  { time: "08:10", icon: "🚐", text: "3호차 운행 시작 — 앙성면 방면" },
+  { time: "08:14", icon: "📍", text: "윤정희 어르신 픽업 완료 (앙성면)" },
+  { time: "08:20", icon: "🚐", text: "1호차 운행 시작 — 산척면 방면" },
+  { time: "08:23", icon: "📍", text: "김영자 어르신 픽업 완료 (산척면)" },
+  { time: "08:31", icon: "📞", text: "전화 접수 1건 — 내일 예약 등록 (콜센터)" },
+  { time: "08:40", icon: "🚐", text: "2호차 운행 시작 — 소태면 방면" },
+  { time: "08:47", icon: "📍", text: "정갑수 어르신 픽업 완료 (소태면)" },
+  { time: "09:02", icon: "🏥", text: "1호차 건국대충주병원 도착 — 접수 진행" },
 ];
 
 /** 단위경제 — 어르신 3인 합승 1회 운행 기준 (사업계획서 §4) */
