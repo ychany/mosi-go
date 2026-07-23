@@ -54,6 +54,7 @@ export {
   LayoutDashboard,
   Home,
   MapPinned,
+  Ticket,
   Wallet,
   Briefcase,
   MessageSquareHeart,

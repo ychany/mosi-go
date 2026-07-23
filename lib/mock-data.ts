@@ -328,7 +328,7 @@ export const INTAKE_FEED = [
 export const OPERATOR_ASSIGNMENT = {
   assignedAt: "오늘 05:00",
   from: "AI 배차 엔진",
-  note: "차량 3대 · 어르신 8명 · 확인 통화 8건",
+  note: "차량 3대 · 어르신 8명 · 정상 건은 무개입",
 };
 
 /** 관제 라이브 피드 — 배차 확정 후 지도 위 티커에 롤링되는 이벤트 (연출) */
@@ -471,7 +471,7 @@ export const TRACK = {
 // 하루 업무: 예약 확인 콜 → 출발 알림 → 기사 체크 수신 → 귀가 확인 콜 → 리포트 발송.
 
 /** 관리자 오늘 업무 큐 — 통화·확인 중심 */
-export type TaskKind = "call" | "check" | "report" | "cs";
+export type TaskKind = "alert" | "check" | "report" | "cs";
 export interface OperatorTask {
   id: string;
   time: string;
@@ -483,20 +483,19 @@ export interface OperatorTask {
 }
 
 export const OPERATOR_TASKS: OperatorTask[] = [
-  { id: "t1", time: "07:40", kind: "call", title: "출발 안내 콜 — 김영자 어르신", detail: "08:20 픽업 · 1호차 이수진 기사", elderId: "e1", done: true },
-  { id: "t2", time: "07:52", kind: "call", title: "출발 안내 콜 — 이말순 어르신", detail: "08:50 픽업 · 1호차", elderId: "e3", done: true },
-  { id: "t3", time: "09:22", kind: "check", title: "탑승 확인 — 1호차 3인", detail: "기사 앱 체크 수신 · 전원 탑승", done: true },
-  { id: "t4", time: "09:47", kind: "check", title: "병원 도착 확인 — 1호차", detail: "건국대충주병원 정문 하차", done: true },
-  { id: "t5", time: "12:30", kind: "call", title: "귀가 확인 콜 — 김영자 어르신", detail: "진료 종료 · 귀가 차량 배차 필요", elderId: "e1", done: false },
-  { id: "t6", time: "12:50", kind: "report", title: "리포트 발송 — 김성호 님", detail: "통화·기사 체크 정리 후 자녀 앱 전송", elderId: "e1", done: false },
-  { id: "t7", time: "13:10", kind: "cs", title: "보호자 문의 — 박미영 님", detail: "다음 주 수요일 일정 변경 요청", elderId: "e2", done: false },
+  { id: "t1", time: "08:20", kind: "check", title: "1호차 전원 탑승", detail: "기사 앱 체크 수신 · 자동 확인", done: true },
+  { id: "t2", time: "08:47", kind: "check", title: "2호차 전원 탑승", detail: "기사 앱 체크 수신 · 자동 확인", done: true },
+  { id: "t3", time: "08:52", kind: "alert", title: "미탑승 — 조순남 어르신", detail: "3호차 5분 대기 중 · 확인 전화 필요", elderId: "e8", done: false },
+  { id: "t4", time: "09:47", kind: "check", title: "1호차 병원 도착", detail: "건국대충주병원 정문 하차", done: true },
+  { id: "t5", time: "12:40", kind: "report", title: "리포트 검토·발송 — 김성호 님", detail: "AI 자동 생성 완료 · 검토 후 전송", elderId: "e1", done: false },
+  { id: "t6", time: "13:10", kind: "cs", title: "보호자 문의 — 박미영 님", detail: "다음 주 수요일 일정 변경 요청", elderId: "e2", done: false },
 ];
 
 /** 관리자 오늘 처리량 — 1인이 감당하는 규모를 보여주는 지표 (§1.9) */
 export const OPERATOR_STATS = [
   { value: "8명", label: "담당 어르신" },
   { value: "3대", label: "관제 차량" },
-  { value: "16건", label: "오늘 통화" },
+  { value: "1건", label: "이상 대응" },
 ];
 
 /** 관제·현장 알림 (연출) */
@@ -515,14 +514,40 @@ export const UPCOMING_RIDES = [
   { date: "8월 4일 (화)", time: "14:00", hospital: "충주의료원", department: "정형외과", auto: false },
 ];
 
-/** 부모님 케어 멤버십 — 사업계획서 B2C 상품 (월 19,900원) */
-export const MEMBERSHIP = {
-  name: "부모님 케어 멤버십",
-  price: "월 19,900원",
-  benefits: ["정기 배차 우선권", "진료 리포트 무제한", "복약 알림"],
-  active: true,
+/**
+ * 통원권 — 이동을 '회차'로 판다. (PROTOTYPE_PLAN §1.10)
+ * 리포트·실시간 위치는 별도 상품이 아니라 전 이용자 기본 포함이다.
+ */
+export const PASS = {
+  /** 현재 이용 중인 상품 — 김영자 어르신은 주 3회 투석이라 구독형 */
+  type: "정기 통원 구독" as const,
+  cycle: "투석 주 3회 (월·수·금)",
+  included: 13, // 월 포함 회차
+  used: 8,
+  carriedOver: 2, // 지난달 휴진 이월분
   since: "2026년 3월",
+  /** 바우처 차감 후 자녀가 실제 결제하는 금액 */
+  voucherCovered: 10,
+  selfPaid: 3,
 };
+
+/** 상품 비교 — 구독 vs 회수권 (§1.10 투트랙) */
+export const PASS_PLANS = [
+  {
+    id: "subscription",
+    name: "정기 통원 구독",
+    target: "투석·재활 등 고정 스케줄",
+    detail: "월 12~13회 포함 · 좌석 우선 확보 · 미사용분 자동 이월",
+    recommended: true,
+  },
+  {
+    id: "coupon",
+    name: "통원 회수권",
+    target: "만성질환 외래 등 비정기",
+    detail: "10회권 선구매 · 유효기간 6개월 · 낱개보다 저렴",
+    recommended: false,
+  },
+];
 
 // ───────────────────────────── 지자체 대시보드 ─────────────────────────────
 

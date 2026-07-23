@@ -28,8 +28,9 @@ import {
 /**
  * 운영 관리자 — 오늘 업무. (PROTOTYPE_PLAN §1.9)
  *
- * 관리자는 **사무실에서 일한다.** 차에 타지 않고 병원에도 가지 않는다.
- * 하루 업무는 통화와 확인이다: 출발 안내 콜 → 기사 체크 수신 → 귀가 확인 콜 → 리포트 발송.
+ * 관리자는 **사무실에서 일한다.** 차에 타지 않고 병원에도 가지 않으며,
+ * **정상 케이스에는 개입하지 않는다** — 기사 앱 체크가 자동으로 올라오고 리포트도 AI가 만든다.
+ * 사람이 붙는 것은 미탑승·지연 같은 이상 건과 보호자 문의뿐이다.
  * 한 사람이 어르신 8명·차량 3대를 동시에 관제하는 것이 지방에서 원가가 성립하는 이유다.
  */
 
@@ -37,8 +38,8 @@ const RUN = DISPATCH_SCENARIOS[0];
 const ROUTE_HEX = ["#3ba949", "#42a5f5", "#ffa726"];
 
 const TASK_STYLE: Record<TaskKind, { label: string; icon: typeof Phone }> = {
-  call: { label: "통화", icon: Phone },
-  check: { label: "확인", icon: Check },
+  alert: { label: "이상 대응", icon: TriangleAlert },
+  check: { label: "자동 확인", icon: Check },
   report: { label: "리포트", icon: ClipboardList },
   cs: { label: "문의", icon: Headset },
 };
@@ -177,7 +178,10 @@ export default function OperatorHome() {
       </div>
 
       {/* 오늘 업무 큐 */}
-      <h2 className="text-base font-bold px-5 pt-5 pb-2">오늘 업무</h2>
+      <div className="flex items-baseline justify-between px-5 pt-5 pb-2">
+        <h2 className="text-base font-bold">오늘 업무</h2>
+        <span className="text-[11px] text-faint">정상 건은 자동 처리</span>
+      </div>
       <div className="mx-4 space-y-2.5">
         {tasks.map((t) => {
           const Icon = TASK_STYLE[t.kind].icon;
@@ -187,11 +191,11 @@ export default function OperatorHome() {
               key={t.id}
               onClick={() => toggle(t.id)}
               className={`w-full bg-card rounded-2xl px-4 py-3.5 flex items-center gap-3 text-left transition
-                ${t.done ? "shadow-card opacity-60" : "shadow-card-md"}`}
+                ${t.done ? "shadow-card opacity-60" : t.kind === "alert" ? "shadow-card-md ring-2 ring-orange" : "shadow-card-md"}`}
             >
               <span
                 className={`w-9 h-9 rounded-xl grid place-items-center shrink-0
-                  ${t.done ? "bg-primary text-white" : "bg-primary-light text-primary-dark"}`}
+                  ${t.done ? "bg-primary text-white" : t.kind === "alert" ? "bg-[#fff3e0] text-orange" : "bg-primary-light text-primary-dark"}`}
               >
                 {t.done ? <Check size={17} strokeWidth={3} /> : <Icon size={17} />}
               </span>

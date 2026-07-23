@@ -22,9 +22,9 @@ import {
 /**
  * 운행 상세 — 귀가 확인 통화 → AI 리포트. (PROTOTYPE_PLAN §1.9, §6.2)
  *
- * 현장에 동행 인력이 없다. 리포트의 원천은 **기사 앱 체크 + 관리자 확인 통화**다.
- * 관리자가 사무실에서 어르신께 전화를 걸어 진료 결과를 확인하면,
- * AI가 통화 내용과 기사 체크 기록을 합쳐 자녀용 리포트로 정리한다.
+ * 현장에 동행 인력이 없다. 리포트의 원천은 **기사 앱 체크 + 어르신 확인 통화**다.
+ * 정상 건은 관리자가 개입하지 않지만(§1.9), 처방 변경처럼 자녀에게 전할 내용이 있으면
+ * 귀가 확인 통화를 한다. AI가 통화 내용과 기사 체크를 합쳐 리포트를 만들고 관리자는 검토·발송한다.
  *
  * 실제 통화·STT·AI 호출은 없다 — 전 과정이 오프라인 연출이다.
  */
@@ -148,7 +148,7 @@ export default function TripDetailPage() {
           <div className="bg-card rounded-2xl shadow-card p-5 text-center">
             <p className="text-[15px] font-bold mb-1">귀가 확인 통화</p>
             <p className="text-xs text-sub mb-4">
-              어르신께 전화해 진료 결과를 확인하면, AI가 자녀 리포트로 정리합니다
+              처방 변경이 확인되어 통화가 필요합니다 · AI가 통화 내용을 자녀 리포트로 정리합니다
             </p>
             <button
               onClick={() => setPhase("calling")}
