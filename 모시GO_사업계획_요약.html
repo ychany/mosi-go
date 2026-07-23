@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모시GO — 고령자 의료동행 모빌리티 플랫폼 · 사업계획 요약</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1c2b3a;        /* 본문 잉크 */
+  --deep:#12222f;       /* 헤더 딥 네이비 */
+  --green:#2e7d5b;      /* 노선 그린 — 농촌·케어 */
+  --green-soft:#e4f0ea;
+  --amber:#d98e2b;      /* 강조 앰버 */
+  --paper:#f6f8f5;      /* 배경 */
+  --card:#ffffff;
+  --line:#d8e0da;
+  --gray:#5c6a75;
+  --serif:'Gowun Batang', serif;
+  --sans:'Noto Sans KR', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.75;font-size:16px}
+
+/* ---------- 히어로 ---------- */
+.hero{background:var(--deep);color:#f2f5f2;padding:88px 24px 72px;position:relative;overflow:hidden}
+.hero-inner{max-width:860px;margin:0 auto;position:relative;z-index:1}
+.hero .eyebrow{font-size:13px;letter-spacing:.18em;color:#8fb8a4;font-weight:700;margin-bottom:20px}
+.hero h1{font-family:var(--serif);font-size:clamp(40px,7vw,64px);font-weight:700;line-height:1.15;margin-bottom:10px}
+.hero h1 .go{color:var(--amber)}
+.hero .sub{font-size:clamp(17px,2.6vw,22px);color:#c3d2ca;font-weight:500;margin-bottom:36px}
+.hero .thesis{font-family:var(--serif);font-size:clamp(18px,3vw,24px);line-height:1.7;border-left:3px solid var(--amber);padding-left:20px;max-width:640px}
+.hero .thesis em{font-style:normal;color:var(--amber)}
+.hero-route{position:absolute;right:-40px;top:0;bottom:0;width:340px;opacity:.14;pointer-events:none}
+.hero-stats{display:flex;gap:0;margin-top:44px;border-top:1px solid rgba(255,255,255,.15);flex-wrap:wrap}
+.hero-stats div{padding:20px 32px 0 0;margin-right:32px}
+.hero-stats b{display:block;font-size:30px;font-weight:900;color:#fff}
+.hero-stats span{font-size:13px;color:#9fb3a8}
+
+/* ---------- 노선 레일 레이아웃 ---------- */
+.doc{max-width:860px;margin:0 auto;padding:56px 24px 80px;position:relative}
+.stop{position:relative;padding-left:56px;margin-bottom:64px}
+.stop::before{ /* 노선 세로선 */
+  content:'';position:absolute;left:15px;top:14px;bottom:-64px;width:4px;
+  background:var(--green);border-radius:2px}
+.stop:last-of-type::before{bottom:auto;height:calc(100% - 14px)}
+.stop::after{ /* 정거장 원 */
+  content:'';position:absolute;left:6px;top:4px;width:22px;height:22px;border-radius:50%;
+  background:var(--paper);border:4px solid var(--green)}
+.stop.terminal::after{background:var(--amber);border-color:var(--amber)}
+.stop .stop-label{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--green);margin-bottom:6px}
+.stop h2{font-family:var(--serif);font-size:clamp(24px,4vw,30px);font-weight:700;line-height:1.35;margin-bottom:18px}
+.stop h3{font-size:16px;font-weight:700;color:var(--green);margin:26px 0 10px}
+.stop p{margin-bottom:14px}
+.stop ul{list-style:none;margin-bottom:14px}
+.stop ul li{position:relative;padding-left:20px;margin-bottom:8px}
+.stop ul li::before{content:'';position:absolute;left:2px;top:.72em;width:8px;height:8px;border-radius:50%;background:var(--green);opacity:.55}
+
+.callout{background:var(--green-soft);border-left:4px solid var(--green);padding:18px 22px;border-radius:0 10px 10px 0;margin:20px 0;font-weight:500}
+.callout.killer{background:#fdf3e3;border-color:var(--amber)}
+.callout b{font-weight:900}
+
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:18px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+.card .tag{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--green);border-radius:999px;padding:3px 12px;margin-bottom:12px}
+.card h4{font-size:16px;font-weight:700;margin-bottom:8px}
+.card p, .card li{font-size:14px;color:var(--gray);line-height:1.7}
+.card ul{list-style:none}
+.card ul li{padding-left:14px;position:relative;margin-bottom:6px}
+.card ul li::before{content:'·';position:absolute;left:0;color:var(--green);font-weight:900}
+
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;
+  box-shadow:0 1px 3px rgba(18,34,47,.08);margin:18px 0;font-size:14px}
+th{background:var(--deep);color:#fff;font-weight:700;padding:12px 14px;text-align:left;font-size:13px}
+td{padding:12px 14px;border-top:1px solid var(--line);vertical-align:top}
+tbody tr:nth-child(even){background:#f2f6f3}
+td.hl{background:var(--green-soft);font-weight:700}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+.unit{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:16px 0}
+.unit .u{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;flex:1 1 150px;text-align:center}
+.unit .u b{display:block;font-size:22px;font-weight:900;color:var(--ink)}
+.unit .u span{font-size:12.5px;color:var(--gray)}
+.unit .op{display:flex;align-items:center;font-size:22px;font-weight:900;color:var(--green)}
+.unit .u.result{background:var(--green);border-color:var(--green)}
+.unit .u.result b{color:#fff}
+.unit .u.result span{color:#d7eadf}
+
+.qa{margin:18px 0}
+.qa details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.qa summary{cursor:pointer;padding:16px 20px;font-weight:700;list-style:none;position:relative;padding-right:44px}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary::after{content:'+';position:absolute;right:20px;top:50%;transform:translateY(-50%);
+  font-size:22px;font-weight:400;color:var(--green);transition:transform .2s}
+.qa details[open] summary::after{transform:translateY(-50%) rotate(45deg)}
+.qa .a{padding:0 20px 18px;color:var(--gray);border-top:1px dashed var(--line);padding-top:14px;margin:0 0 0}
+
+.roadmap{position:relative;margin:18px 0}
+.rm-item{display:flex;gap:16px;margin-bottom:4px}
+.rm-when{flex:0 0 96px;font-weight:900;font-size:14px;color:var(--green);padding-top:14px;text-align:right}
+.rm-body{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.rm-body b{display:block;margin-bottom:4px}
+.rm-body span{font-size:14px;color:var(--gray)}
+
+footer{background:var(--deep);color:#9fb3a8;font-size:13px;padding:32px 24px;line-height:1.8}
+footer .f-inner{max-width:860px;margin:0 auto}
+
+@media (max-width:640px){
+  .stop{padding-left:42px}
+  .stop::before{left:11px}
+  .stop::after{left:2px;width:18px;height:18px}
+  .rm-when{flex-basis:72px;font-size:13px}
+  .hero-stats div{padding-right:0;margin-right:24px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .stop{opacity:0;transform:translateY(14px);animation:rise .55s ease forwards}
+  .stop:nth-of-type(1){animation-delay:.05s}.stop:nth-of-type(2){animation-delay:.1s}
+  .stop:nth-of-type(3){animation-delay:.15s}.stop:nth-of-type(4){animation-delay:.2s}
+  @keyframes rise{to{opacity:1;transform:none}}
+}
+@media print{
+  .hero{padding:40px 24px}
+  .stop{break-inside:avoid;animation:none;opacity:1;transform:none}
+  .qa details{break-inside:avoid}
+  .qa summary::after{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ========== 히어로 ========== -->
+<header class="hero">
+  <svg class="hero-route" viewBox="0 0 300 600" fill="none" aria-hidden="true">
+    <path d="M60 -20 C 60 120, 240 160, 240 300 C 240 440, 60 480, 60 620" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-dasharray="2 26"/>
+    <circle cx="60" cy="60" r="16" fill="#fff"/><circle cx="216" cy="230" r="16" fill="#fff"/>
+    <circle cx="216" cy="380" r="16" fill="#fff"/><circle cx="60" cy="545" r="16" fill="#fff"/>
+  </svg>
+  <div class="hero-inner">
+    <p class="eyebrow">충주 특화산업 · 모빌리티 × 정밀의료 융합 &nbsp;|&nbsp; IR 경진대회 사업계획 요약</p>
+    <h1>모시<span class="go">GO</span></h1>
+    <p class="sub">고령자 의료동행 모빌리티 플랫폼 — 집에서 병원, 다시 집까지</p>
+    <p class="thesis">"서울은 병원이 가까워서 '동행'만 팔면 되지만,<br>충주는 병원까지 <em>'가는 것' 자체가 문제</em>입니다."</p>
+    <div class="hero-stats">
+      <div><b>25.2%</b><span>충주시 65세 이상 비율 (2025.8)</span></div>
+      <div><b>약 5만 명</b><span>충주 고령 인구 규모</span></div>
+      <div><b>1시간+</b><span>읍·면 → 거점병원 버스 소요</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="doc">
+
+  <!-- ========== 개요 ========== -->
+  <section class="stop">
+    <p class="stop-label">SERVICE</p>
+    <h2>서비스 개요</h2>
+    <p><b>모시GO</b>(모시다+GO)는 읍·면 지역 어르신의 정기 통원(투석·재활·만성질환 진료)을 위해, AI가 같은 시간대·같은 방면의 수요를 묶어 차량과 동행매니저를 배차하고, 접수부터 진료·수납·약국·귀가까지 전 과정을 동행한 뒤 진료 결과를 타지의 자녀에게 리포트하는 <b>농촌형 의료 모빌리티 플랫폼</b>입니다.</p>
+    <p>기존 병원동행 서비스가 "병원 안에서의 1:1 동행"을 파는 것과 달리, 모시GO는 이동 자체가 문제인 지방에서 <b>합승 최적화로 1인당 비용을 낮추는 것</b>이 핵심입니다. AI 배차는 기술 과시가 아니라 수익모델 그 자체입니다.</p>
+  </section>
+
+  <!-- ========== 1. 문제 ========== -->
+  <section class="stop">
+    <p class="stop-label">01 · PROBLEM</p>
+    <h2>문제 정의 — 충주에서 세 가지 공백이 겹친다</h2>
+    <p>충주시는 65세 이상 인구 비율 <b>25.2%</b>(2025.8, 행정안전부 주민등록 기준)로 이미 초고령사회에 진입했으며, 충북 전체 고령화율(22.7%)은 전국 평균(20.8%)을 상회합니다.</p>
+    <div class="card-grid">
+      <div class="card">
+        <span class="tag">교통 공백</span>
+        <h4>버스로는 진료 시간을 못 맞춘다</h4>
+        <ul>
+          <li>산척면·소태면·엄정면 → 건국대충주병원·충주의료원 환승 포함 1시간 이상</li>
+          <li>배차 간격 1~2시간 수준</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">의료 공백</span>
+        <h4>이동이 안 되면 치료를 포기한다</h4>
+        <ul>
+          <li>투석 주 3회, 재활 주 2~3회 — 정기 통원이 생존과 직결</li>
+          <li>이동 수단 부재로 치료 중단·포기 발생</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">돌봄 공백</span>
+        <h4>자녀는 수도권에 있다</h4>
+        <ul>
+          <li>통원일마다 연차를 내거나, 어르신 혼자 병원행</li>
+          <li>진료 내용·처방 변경을 가족 누구도 모름</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">핵심 메시지 — 수도권 동행 서비스는 대중교통을 전제로 설계되어 지방에 내려올 수 없다. 충주의 문제는 "동행"이 아니라 <b>이동 × 동행 × 보고의 결합 문제</b>다.</div>
+  </section>
+
+  <!-- ========== 2. 솔루션 ========== -->
+  <section class="stop">
+    <p class="stop-label">02 · SOLUTION</p>
+    <h2>솔루션 — 3개 앱, 하나의 운영 체계</h2>
+    <div class="card-grid">
+      <div class="card">
+        <span class="tag">① 어르신·보호자 채널</span>
+        <h4>앱 + 전화 병행</h4>
+        <ul>
+          <li>설계 원칙: <b>어르신은 앱을 쓰지 않는다</b> — 접수 채널 3중 설계</li>
+          <li>ⓐ 자녀가 앱으로 대리 예약 ⓑ 전화 접수(콜센터 입력) ⓒ 이장님·복지관 단말</li>
+          <li>자녀 앱: 실시간 위치, 진료 리포트, 정기 배차 자동 등록(투석 주3회 등)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">② 동행매니저 앱</span>
+        <h4>현장의 손과 눈</h4>
+        <ul>
+          <li>당일 스케줄 + 어르신별 케어노트(휠체어·청력·주의사항)</li>
+          <li>체크리스트: 픽업→접수→진료→수납→약국→귀가</li>
+          <li>음성 메모 → 생성형 AI가 자녀용 리포트 자동 정리</li>
+          <li>지역 청년·경단녀 일자리 창출</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">③ 관제 웹</span>
+        <h4>운영팀·지자체용</h4>
+        <ul>
+          <li>AI 배차: 예약 시간 + 출발지 좌표 → 동일 시간대(±40분)·동일 방면 클러스터링</li>
+          <li>초기 규칙 기반 → 데이터 축적 후 고도화 (AI 과장 없이 단계적)</li>
+          <li>지자체 대시보드: 읍면별 수요 지도·접근성 지표 = <b>B2G 영업 무기</b></li>
+        </ul>
+      </div>
+    </div>
+    <h3>생성형 AI 적용 지점</h3>
+    <ul>
+      <li>매니저 음성 메모 → 자녀용 진료 리포트 자동 작성</li>
+      <li>전화 접수 STT → 예약 정보 자동 입력</li>
+      <li>어르신별 케어노트 요약·인수인계 자동화</li>
+    </ul>
+  </section>
+
+  <!-- ========== 3. 경쟁 ========== -->
+  <section class="stop">
+    <p class="stop-label">03 · COMPETITION</p>
+    <h2>경쟁 분석 — "이미 있는 서비스 아닌가?"</h2>
+    <p>병원동행 시장은 이미 형성돼 있습니다. 서울시 병원안심동행서비스는 2021년 시작 후 3년간 누적 약 4.5만 건·만족도 92.9%를 기록했고, 위드메이트·카인드·메이븐플러스 등 민간 스타트업과 수백억 원대 투자를 유치한 실버케어 플랫폼(케어링·케어네이션·케어닥)도 활동 중입니다. 그러나 <b>모두 대도시 · 1:1 구조</b>입니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>서울시 안심동행</th><th>수도권 민간 (위드메이트 등)</th><th>모시GO</th></tr></thead>
+        <tbody>
+          <tr><td><b>서비스 지역</b></td><td>서울</td><td>서울·인천·경기 등 대도시</td><td class="hl">지방 중소도시 (충주)</td></tr>
+          <tr><td><b>이동 문제 해결</b></td><td>X (대중교통 전제)</td><td>일부 (동행 중심)</td><td class="hl">O — 수요 묶음 배차가 핵심</td></tr>
+          <tr><td><b>배차 방식</b></td><td>1:1</td><td>1:1</td><td class="hl">AI 다인승 합승 최적화</td></tr>
+          <tr><td><b>원가 구조</b></td><td>1:1 고비용</td><td>건당 5~10만 원대 고가</td><td class="hl">합승으로 1인당 비용 절감</td></tr>
+          <tr><td><b>자녀 리포트</b></td><td>X</td><td>X</td><td class="hl">O</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><b>차별화 논리:</b> 지방은 이동 거리가 길어 1:1 구조로는 원가가 성립하지 않습니다. 모시GO는 같은 날 같은 병원에 가는 어르신들을 묶는 "농촌형 의료 모빌리티 최적화"입니다. 서울에서 시장성이 검증됐고(시장 성숙의 증거), 지방에는 아무도 없으며(빈 시장), 서울시 모델이 전국 지자체의 벤치마킹 대상이 되고 있다는 점(예산이 열리는 방향)이 동시에 우리의 기회입니다.</p>
+  </section>
+
+  <!-- ========== 4. BM ========== -->
+  <section class="stop">
+    <p class="stop-label">04 · BUSINESS MODEL</p>
+    <h2>비즈니스 모델 — 3층 수익 구조</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>단계</th><th>고객</th><th>상품</th><th>수익 구조</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>1층 · B2G</b><br>1년차, 초기 생존</td><td>지자체</td>
+            <td>노인돌봄·교통약자 이동지원 예산의 <b>운영 플랫폼</b> (기존 바우처 사업 효율화 도구)</td>
+            <td>운영 위탁비 또는 건당 정산<br>예: 건당 3.5만 원 × 월 400건 = <b>월 1,400만 원</b></td>
+          </tr>
+          <tr>
+            <td><b>2층 · B2C</b><br>2년차~</td><td>타지 거주 자녀</td>
+            <td>"부모님 케어 멤버십" — 정기 배차 우선권 + 진료 리포트 + 복약 알림</td>
+            <td><b>월 19,900원</b> 구독<br>지불 능력과 지불 동기(죄책감)를 모두 가진 고객</td>
+          </tr>
+          <tr>
+            <td><b>3층 · B2B</b><br>2~3년차</td><td>지역 병원·투석의원</td>
+            <td>노쇼 감소·재진율 유지 (투석 환자 1명 = 병원 연 수천만 원 매출)</td>
+            <td>월 정액 제휴비</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>단위경제 (Unit Economics) — 어르신 3인 합승 1회 운행 기준</h3>
+    <div class="unit">
+      <div class="u"><b>10.5만 원</b><span>수입 · 바우처 3.5만 × 3인</span></div>
+      <div class="op">−</div>
+      <div class="u"><b>9.2만 원</b><span>비용 · 차량 4만 + 매니저 4h×1.3만</span></div>
+      <div class="op">=</div>
+      <div class="u result"><b>+1.3만 원</b><span>건당 마진 (자녀 구독은 순증)</span></div>
+    </div>
+    <div class="callout killer">킬러 멘트 — <b>"1:1이면 적자, 합승이면 흑자. 그래서 AI 배차는 기술이 아니라 수익모델 그 자체입니다."</b></div>
+  </section>
+
+  <!-- ========== 5. 시장 ========== -->
+  <section class="stop">
+    <p class="stop-label">05 · MARKET</p>
+    <h2>시장 규모 (TAM / SAM / SOM)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>구분</th><th>정의</th><th>근거 · 규모</th></tr></thead>
+        <tbody>
+          <tr><td><b>TAM</b></td><td>전국 비수도권 시군의 65세 이상 통원 이동지원 시장</td>
+            <td>전국 시군 대부분이 동일한 의료·교통 공백 보유. 참고: 글로벌 의료동행 시장 2025년 4,860만 달러 → 2032년 8,120만 달러 (CAGR 7.6%)</td></tr>
+          <tr><td><b>SAM</b></td><td>충북 북부권 (충주·제천·음성·괴산·단양)</td>
+            <td>괴산군 고령화율 43.0%로 충북 최고 — 확산 2순위 지역. 제천 28.5%, 음성 26.8%</td></tr>
+          <tr><td><b>SOM<br>(3년)</b></td><td>충주시 실증 시장</td>
+            <td>고령자 약 5만 명 × 정기통원 수요 15% × 초기 점유 10% ≈ <b>750명</b><br>월 4회 이용 기준 연 3,000건 × 3.5만 원 ≈ <b>연 1억 원+</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>SOM이 작아 보일 수 있으나 "지자체 1곳 실증 매출"로는 정직하고 현실적인 숫자이며, 심사에서 오히려 신뢰를 얻는 접근입니다. 성장 논리는 <b>"충주에서 시작해 전국 시군으로 복제"</b>입니다.</p>
+  </section>
+
+  <!-- ========== 6. 로드맵 ========== -->
+  <section class="stop">
+    <p class="stop-label">06 · ROADMAP</p>
+    <h2>로드맵 &amp; 실행 계획</h2>
+    <div class="roadmap">
+      <div class="rm-item"><div class="rm-when">0~6개월</div>
+        <div class="rm-body"><b>MVP · 수요 검증</b><span>앱 없이 시작 — 카톡·전화 접수 + 스프레드시트 배차로 1개 면(예: 산척면) × 투석·재활 환자 20명 파일럿. "기술보다 수요 검증 먼저"</span></div></div>
+      <div class="rm-item"><div class="rm-when">6~12개월</div>
+        <div class="rm-body"><b>제품화 · B2G 진입</b><span>앱 3종(자녀·매니저·관제) 출시, 충주시 협약(스마트도시·노인복지 부서), 동행매니저 10명 양성(지역 청년·경단녀)</span></div></div>
+      <div class="rm-item"><div class="rm-when">12~24개월</div>
+        <div class="rm-body"><b>권역 확산</b><span>제천·괴산 확산, 자녀 구독(B2C) 출시</span></div></div>
+      <div class="rm-item"><div class="rm-when">24~36개월</div>
+        <div class="rm-body"><b>전국 복제</b><span>충북 전역 → 타 도 프랜차이즈형 확산 (지역 운수사·사회적기업에 플랫폼 제공)</span></div></div>
+    </div>
+  </section>
+
+  <!-- ========== 7. Q&A ========== -->
+  <section class="stop terminal">
+    <p class="stop-label">07 · Q&amp;A</p>
+    <h2>예상 질문 방어 (리허설용)</h2>
+    <div class="qa">
+      <details open>
+        <summary>택시 불러주는 것과 뭐가 다른가?</summary>
+        <p class="a">택시는 이동만 제공합니다. 모시GO는 예약~진료~복약~자녀 보고까지 전 과정을 담당하고, 합승 최적화로 비용을 절반으로 낮춥니다. 무엇보다 읍·면에서는 그 택시조차 잡히지 않습니다.</p>
+      </details>
+      <details>
+        <summary>어르신이 앱을 쓸 수 있나?</summary>
+        <p class="a">쓰지 않습니다. 그래서 지불자·조작자는 자녀와 지자체이고, 어르신 접점은 전화와 사람(동행매니저)입니다.</p>
+      </details>
+      <details>
+        <summary>의료법 문제는 없나?</summary>
+        <p class="a">의료행위를 하지 않습니다. 이동·행정 보조에 한정하며, 리포트도 처방전·수납증 기반의 사실 전달로 제한합니다. 이 선긋기를 선제적으로 제시해 준비된 팀임을 보여줍니다.</p>
+      </details>
+      <details>
+        <summary>대형 케어 플랫폼이 진입하면?</summary>
+        <p class="a">지역 병원·지자체·이장님 네트워크가 진입장벽입니다. 수요 밀도가 낮은 지방은 대기업 원가 구조로는 진입이 어렵고, 로컬 오퍼레이션 역량이 우리의 해자입니다.</p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="f-inner">
+    <b style="color:#fff">모시GO</b> — 고령자 의료동행 모빌리티 플랫폼 · 사업계획 요약<br>
+    데이터 출처: 행정안전부 주민등록 인구통계(2025.8) · 서울시 병원안심동행서비스 운영 실적 · Coherent Market Insights 글로벌 의료동행 서비스 시장 보고서(2025)<br>
+    ※ 수치는 IR 발표 시점 기준으로 재확인을 권장합니다.
+  </div>
+</footer>
+
+</body>
+</html>
