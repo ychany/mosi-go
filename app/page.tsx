@@ -19,8 +19,8 @@ const CHANNELS = [
     href: "/manager",
     icon: HeartHandshake,
     tag: "어르신 트랙",
-    title: "동행매니저",
-    desc: "어르신은 앱을 쓰지 않습니다 — 어르신의 화면은 매니저의 손에",
+    title: "운영 관리자",
+    desc: "사무실에서 배차·통화·리포트를 관제합니다 — 동행 인력 없이",
     device: "모바일",
   },
   {

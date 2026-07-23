@@ -43,7 +43,7 @@ export default function ReportPage() {
           <header className="flex items-center justify-between px-5 py-3 bg-primary-light">
             <div>
               <p className="text-[13px] font-bold text-primary-dark flex items-center gap-1.5"><Sparkles size={14} />오늘 · {TODAY}</p>
-              <p className="text-[11px] text-sub">{r.hospital} · {r.manager} 작성</p>
+              <p className="text-[11px] text-sub">{r.hospital} · {r.operator} 작성</p>
             </div>
             <button
               onClick={() => setShared(true)}
@@ -74,7 +74,10 @@ export default function ReportPage() {
                     <span className="tnum text-[12px] font-bold text-primary-dark w-10 shrink-0">{t.time}</span>
                     <div>
                       <p className="text-[14px] font-bold leading-snug">{t.label}</p>
-                      <p className="text-[12px] text-sub">{t.note}</p>
+                      <p className="text-[12px] text-sub">
+                        {t.note}
+                        <span className="ml-1.5 text-[10.5px] text-faint">· {t.source}</span>
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -107,8 +110,8 @@ export default function ReportPage() {
 
           {/* 매니저 메모 */}
           <div className="mx-5 mb-4 rounded-xl bg-bg px-4 py-3 border-l-4 border-primary">
-            <p className="text-[11px] font-bold text-faint mb-1">{r.manager}의 메모</p>
-            <p className="text-[13px] leading-relaxed">&ldquo;{r.managerNote}&rdquo;</p>
+            <p className="text-[11px] font-bold text-faint mb-1">{r.operator} 확인</p>
+            <p className="text-[13px] leading-relaxed">&ldquo;{r.operatorNote}&rdquo;</p>
           </div>
 
           {/* 다음 예약 */}
@@ -153,7 +156,7 @@ export default function ReportPage() {
         ))}
 
         <p className="text-[11px] text-faint text-center pt-1 pb-4">
-          리포트는 동행 종료 후 자동으로 도착합니다 · 케어 멤버십으로 무제한 보관
+          리포트는 귀가 확인 후 자동으로 도착합니다 · 케어 멤버십으로 무제한 보관
         </p>
       </div>
     </div>

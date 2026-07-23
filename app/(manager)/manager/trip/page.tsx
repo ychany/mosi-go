@@ -1,95 +1,112 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Mic, Sparkles, Square, TriangleAlert } from "@/components/icons";
 import {
+  CALL_TRANSCRIPT,
   GUARDIAN_ELDER_ID,
   REPORT_TEXT,
-  TRIP_STEPS,
-  VOICE_MEMO_PREVIEW,
+  TRACK,
   elderById,
 } from "@/lib/mock-data";
+import {
+  BusFront,
+  Check,
+  ClipboardList,
+  MapPin,
+  PhoneCall,
+  Sparkles,
+  Square,
+  TriangleAlert,
+} from "@/components/icons";
 
 /**
- * 동행 진행 — ★데모 2순위. 의료·돌봄 공백의 해소 (PROTOTYPE_PLAN §6.2)
- * 체크리스트 6단계를 노선 레일로 표시. 전부 완료하면
- * 음성 메모 → "AI 정리 중" 2초 → 리포트 타이핑 출력 → 자녀 전송.
- * 실제 녹음·STT·AI 호출은 없다 — 전 과정이 오프라인 연출이다.
+ * 운행 상세 — 귀가 확인 통화 → AI 리포트. (PROTOTYPE_PLAN §1.9, §6.2)
+ *
+ * 현장에 동행 인력이 없다. 리포트의 원천은 **기사 앱 체크 + 관리자 확인 통화**다.
+ * 관리자가 사무실에서 어르신께 전화를 걸어 진료 결과를 확인하면,
+ * AI가 통화 내용과 기사 체크 기록을 합쳐 자녀용 리포트로 정리한다.
+ *
+ * 실제 통화·STT·AI 호출은 없다 — 전 과정이 오프라인 연출이다.
  */
 
-type MemoPhase = "hidden" | "ready" | "recording" | "processing" | "typing" | "done";
+type CallPhase = "idle" | "calling" | "processing" | "typing" | "done";
 
 const elder = elderById(GUARDIAN_ELDER_ID);
 
-export default function TripPage() {
-  const [stepIdx, setStepIdx] = useState(0); // 완료된 단계 수
-  const [memo, setMemo] = useState<MemoPhase>("hidden");
-  const [elapsed, setElapsed] = useState(0); // 녹음 경과(초)
+/** 기사 앱에서 올라온 체크 기록 — 관리자는 이걸 수신만 한다 */
+const DRIVER_CHECKS = [
+  { time: "09:20", label: "자택 앞 탑승", note: `${TRACK.vehicle} · ${TRACK.driver}`, done: true },
+  { time: "09:45", label: "병원 정문 하차", note: "건국대충주병원", done: true },
+  { time: "12:30", label: "귀가 차량 배차", note: "진료 종료 연락 접수", done: true },
+  { time: "12:40", label: "자택 앞 귀가", note: "기사 확인 완료", done: true },
+];
+
+export default function TripDetailPage() {
+  const [phase, setPhase] = useState<CallPhase>("idle");
+  const [elapsed, setElapsed] = useState(0);
+  const [visibleLines, setVisibleLines] = useState(0);
   const [displayed, setDisplayed] = useState("");
   const [sent, setSent] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
 
-  const allDone = stepIdx >= TRIP_STEPS.length;
-
-  function completeStep() {
-    const next = stepIdx + 1;
-    setStepIdx(next);
-    if (next >= TRIP_STEPS.length) setMemo("ready");
-  }
-
-  // 녹음 경과 타이머 (연출 — 실제 녹음 없음)
+  // 통화 중: 경과 타이머 + 대화 한 줄씩 등장
   useEffect(() => {
-    if (memo !== "recording") return;
+    if (phase !== "calling") return;
     const t = setInterval(() => setElapsed((s) => s + 1), 1000);
-    return () => clearInterval(t);
-  }, [memo]);
+    const l = setInterval(() => setVisibleLines((n) => Math.min(n + 1, CALL_TRANSCRIPT.length)), 900);
+    return () => {
+      clearInterval(t);
+      clearInterval(l);
+    };
+  }, [phase]);
 
   // "AI 정리 중" 2초 → 타이핑 시작
   useEffect(() => {
-    if (memo !== "processing") return;
-    const t = setTimeout(() => setMemo("typing"), 2000);
+    if (phase !== "processing") return;
+    const t = setTimeout(() => setPhase("typing"), 2000);
     return () => clearTimeout(t);
-  }, [memo]);
+  }, [phase]);
 
-  // 리포트 타이핑 효과 — 이 연출이 "실제 AI처럼 보이는 이유"의 대부분 (§6.2)
+  // 리포트 타이핑 효과
   useEffect(() => {
-    if (memo !== "typing") return;
+    if (phase !== "typing") return;
     let i = 0;
     const t = setInterval(() => {
-      i += 2; // 2자씩 — 전체 출력 약 6초
+      i += 2;
       setDisplayed(REPORT_TEXT.slice(0, i));
       reportRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
       if (i >= REPORT_TEXT.length) {
         clearInterval(t);
-        setMemo("done");
+        setPhase("done");
       }
     }, 25);
     return () => clearInterval(t);
-  }, [memo]);
+  }, [phase]);
 
   const mmss = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* 헤더 */}
       <header className="grad text-white px-5 pt-4 pb-5 sticky top-0 z-40">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="font-extrabold">동행 진행</span>
-          <span className="text-xs text-white/85">1호차 · 이수진 매니저</span>
+          <span className="font-extrabold">운행 상세</span>
+          <span className="text-xs text-white/85">{TRACK.vehicle} · {TRACK.driver}</span>
         </div>
         <p className="text-[15px] font-bold">
           {elder.name} 어르신
           <span className="ml-1.5 text-[12px] font-normal text-white/85">
-            {elder.age}세 · {elder.ward} · 건국대충주병원 신장내과 09:30
+            {elder.age}세 · {elder.ward} · 건국대충주병원 신장내과
           </span>
         </p>
       </header>
 
-      {/* 케어노트 */}
+      {/* 승하차 유의사항 — 기사에게 전달할 내용 */}
       <section className="bg-card mx-4 -mt-2.5 rounded-2xl shadow-card-md px-5 py-4 relative z-40">
         <p className="text-[12px] font-bold text-primary-dark mb-2 flex items-center gap-1.5">
-          <span className="w-6 h-6 bg-primary-light rounded-lg grid place-items-center text-primary-dark"><TriangleAlert size={13} /></span>
-          케어노트
+          <span className="w-6 h-6 bg-primary-light rounded-lg grid place-items-center text-primary-dark">
+            <TriangleAlert size={13} />
+          </span>
+          승하차 유의사항 — 기사 전달 완료
         </p>
         <ul className="space-y-1.5">
           {elder.careNotes.map((n) => (
@@ -101,106 +118,148 @@ export default function TripPage() {
         </ul>
       </section>
 
-      {/* 체크리스트 — 노선 레일 */}
+      {/* 기사 앱 체크 기록 */}
       <section className="bg-card mx-4 mt-4 rounded-2xl shadow-card px-6 py-5">
-        <p className="text-[12px] font-bold text-sub mb-4">동행 체크리스트</p>
+        <p className="text-[12px] font-bold text-sub mb-4 flex items-center gap-1.5">
+          <BusFront size={14} />
+          기사 앱 체크 기록
+        </p>
         <div className="rail">
-          {TRIP_STEPS.map((step, i) => {
-            const state = i < stepIdx ? "done" : i === stepIdx ? "active" : "";
-            return (
-              <div key={step} className={`rail-stop ${state}`}>
-                <div className="flex items-center gap-2 min-h-9">
-                  <span
-                    className={`text-[15px] ${
-                      i < stepIdx ? "font-bold text-primary-dark" : i === stepIdx ? "font-bold" : "text-faint"
-                    }`}
-                  >
-                    {step}
-                  </span>
-                  {i < stepIdx && <span className="text-[11px] text-faint">완료</span>}
-                  {i === stepIdx && !allDone && (
-                    <button
-                      onClick={completeStep}
-                      className="ml-auto h-9 px-4 rounded-[10px] grad text-white text-[13px] font-bold
-                        shadow-[0_2px_8px_rgba(106,179,77,0.35)] active:scale-[.97] transition"
-                    >
-                      {step} 완료
-                    </button>
-                  )}
+          {DRIVER_CHECKS.map((c) => (
+            <div key={c.time} className="rail-stop done">
+              <div className="flex items-baseline gap-2.5 min-h-6">
+                <span className="tnum text-[12px] font-bold text-primary-dark w-10 shrink-0">{c.time}</span>
+                <div>
+                  <p className="text-[14px] font-bold leading-snug">{c.label}</p>
+                  <p className="text-[12px] text-sub">{c.note}</p>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
+        <p className="text-[11px] text-faint mt-1 pt-3 border-t border-line leading-snug">
+          기사는 승하차만 확인합니다. 병원 안에는 들어가지 않습니다.
+        </p>
       </section>
 
-      {/* 음성 메모 → 리포트 */}
-      {memo !== "hidden" && (
-        <section className="px-4 pt-4 pb-6 space-y-3 animate-[rise_.45s_ease_both]">
-          {(memo === "ready" || memo === "recording") && (
-            <div className="bg-card rounded-2xl shadow-card p-5 text-center">
-              <p className="text-[15px] font-bold mb-1">동행 마무리 — 음성 메모</p>
-              <p className="text-xs text-sub mb-4">오늘 있었던 일을 말로 남기면, AI가 자녀 리포트로 정리합니다</p>
-              {memo === "recording" && (
-                <div className="flex items-center justify-center gap-1 mb-3 h-8" aria-hidden>
-                  {[14, 22, 30, 18, 26, 12, 24, 16].map((h, i) => (
-                    <span
-                      key={i}
-                      className="w-1.5 rounded-full bg-primary animate-pulse"
-                      style={{ height: h, animationDelay: `${i * 90}ms`, animationDuration: ".7s" }}
-                    />
-                  ))}
-                </div>
-              )}
-              <button
-                onClick={() => setMemo(memo === "ready" ? "recording" : "processing")}
-                className={`w-16 h-16 rounded-full text-white text-2xl shadow-card-lg active:scale-95 transition
-                  ${memo === "recording" ? "bg-red" : "grad"}`}
-                aria-label={memo === "recording" ? "녹음 종료" : "녹음 시작"}
-              >
-                <span className="grid place-items-center">{memo === "recording" ? <Square size={20} fill="currentColor" /> : <Mic size={24} />}</span>
-              </button>
-              <p className="tnum text-sm text-sub mt-2">{memo === "recording" ? mmss : "눌러서 녹음"}</p>
-            </div>
-          )}
+      {/* 귀가 확인 통화 → 리포트 */}
+      <section className="px-4 pt-4 pb-6 space-y-3">
+        {phase === "idle" && (
+          <div className="bg-card rounded-2xl shadow-card p-5 text-center">
+            <p className="text-[15px] font-bold mb-1">귀가 확인 통화</p>
+            <p className="text-xs text-sub mb-4">
+              어르신께 전화해 진료 결과를 확인하면, AI가 자녀 리포트로 정리합니다
+            </p>
+            <button
+              onClick={() => setPhase("calling")}
+              className="w-16 h-16 rounded-full grad text-white shadow-card-lg active:scale-95 transition
+                animate-[btnpulse_2.2s_ease-in-out_infinite] grid place-items-center mx-auto"
+              aria-label="통화 시작"
+            >
+              <PhoneCall size={26} />
+            </button>
+            <p className="text-sm text-sub mt-2">눌러서 통화 시작</p>
+          </div>
+        )}
 
-          {memo === "processing" && (
-            <div className="bg-card rounded-2xl shadow-card p-6 text-center">
-              <span className="inline-block w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin mb-2" />
-              <p className="text-[15px] font-bold">AI가 리포트를 정리하고 있습니다…</p>
-              <p className="text-xs text-sub mt-1">음성 인식 → 사실 확인 → 자녀용 문장 정리</p>
+        {phase === "calling" && (
+          <div className="bg-card rounded-2xl shadow-card p-5">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[14px] font-bold flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red animate-pulse" />
+                통화 중 — {elder.name} 어르신
+              </p>
+              <span className="tnum text-sm text-sub">{mmss}</span>
             </div>
-          )}
-
-          {(memo === "typing" || memo === "done") && (
-            <>
-              <div className="bg-bg border border-line rounded-2xl px-5 py-3.5">
-                <p className="text-[11px] font-bold text-faint mb-1">음성 메모 원문</p>
-                <p className="text-[13px] text-sub leading-relaxed">&ldquo;{VOICE_MEMO_PREVIEW}&rdquo;</p>
-              </div>
-              <div ref={reportRef} className="bg-card rounded-2xl shadow-card overflow-hidden">
-                <header className="px-5 py-3 bg-primary-light">
-                  <p className="text-[12px] font-bold text-primary-dark flex items-center gap-1.5"><Sparkles size={14} />AI 정리 리포트 — 자녀 전송용</p>
-                </header>
-                <pre className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed px-5 py-4">
-                  {displayed}
-                  {memo === "typing" && <span className="animate-pulse">▍</span>}
-                </pre>
-              </div>
-              {memo === "done" && (
-                <button
-                  onClick={() => setSent(true)}
-                  disabled={sent}
-                  className={`w-full h-13 rounded-2xl text-white font-bold text-[15px] active:scale-[.99] transition
-                    ${sent ? "bg-primary-dark" : "grad shadow-[0_4px_16px_rgba(106,179,77,0.4)]"}`}
+            <div className="space-y-2 mb-4 min-h-32">
+              {CALL_TRANSCRIPT.slice(0, visibleLines).map((line, i) => (
+                <div
+                  key={i}
+                  className={`flex animate-[rise_.3s_ease_both] ${line.who === "관리자" ? "justify-end" : ""}`}
                 >
-                  {sent ? `✓ ${elder.guardian.name} 님(${elder.guardian.relation})에게 전송 완료` : "자녀에게 리포트 전송"}
-                </button>
-              )}
-            </>
-          )}
-        </section>
-      )}
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[13px] leading-snug
+                      ${line.who === "관리자" ? "bg-primary-light text-ink" : "bg-bg border border-line"}`}
+                  >
+                    {line.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setPhase("processing")}
+              className="w-full h-12 rounded-xl bg-red text-white font-bold text-[15px] active:scale-[.99] transition"
+            >
+              <span className="inline-flex items-center gap-2">
+                <Square size={16} fill="currentColor" />
+                통화 종료 · 리포트 생성
+              </span>
+            </button>
+          </div>
+        )}
+
+        {phase === "processing" && (
+          <div className="bg-card rounded-2xl shadow-card p-6 text-center">
+            <span className="inline-block w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin mb-2" />
+            <p className="text-[15px] font-bold">AI가 리포트를 정리하고 있습니다…</p>
+            <p className="text-xs text-sub mt-1">통화 내용 + 기사 체크 기록 → 자녀용 문장 정리</p>
+          </div>
+        )}
+
+        {(phase === "typing" || phase === "done") && (
+          <>
+            <div className="bg-bg border border-line rounded-2xl px-4 py-3.5">
+              <p className="text-[11px] font-bold text-faint mb-2 flex items-center gap-1.5">
+                <PhoneCall size={12} />
+                귀가 확인 통화 (12:45)
+              </p>
+              <div className="space-y-1">
+                {CALL_TRANSCRIPT.map((line, i) => (
+                  <p key={i} className="text-[12.5px] text-sub leading-relaxed">
+                    <b className="text-ink">{line.who}</b> {line.text}
+                  </p>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-[11px] text-faint">
+              <MapPin size={12} />
+              기사 체크 4건 + 통화 1건
+            </div>
+            <div ref={reportRef} className="bg-card rounded-2xl shadow-card overflow-hidden">
+              <header className="px-5 py-3 bg-primary-light">
+                <p className="text-[12px] font-bold text-primary-dark flex items-center gap-1.5">
+                  <Sparkles size={14} />
+                  AI 정리 리포트 — 자녀 전송용
+                </p>
+              </header>
+              <pre className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed px-5 py-4">
+                {displayed}
+                {phase === "typing" && <span className="animate-pulse">▍</span>}
+              </pre>
+            </div>
+            {phase === "done" && (
+              <button
+                onClick={() => setSent(true)}
+                disabled={sent}
+                className={`w-full h-13 rounded-2xl text-white font-bold text-[15px] active:scale-[.99] transition
+                  ${sent ? "bg-primary-dark" : "grad shadow-[0_4px_16px_rgba(106,179,77,0.4)]"}`}
+              >
+                {sent ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Check size={17} strokeWidth={3} />
+                    {elder.guardian.name} 님({elder.guardian.relation})에게 전송 완료
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-2">
+                    <ClipboardList size={17} />
+                    자녀에게 리포트 전송
+                  </span>
+                )}
+              </button>
+            )}
+          </>
+        )}
+      </section>
     </div>
   );
 }

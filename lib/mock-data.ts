@@ -95,7 +95,7 @@ export const ELDERS: Elder[] = [
     ward: "소태면",
     condition: "재활치료",
     frequency: "주 2회 (화·목)",
-    careNotes: ["보행 보조기 사용", "병원 내 이동 시 동행 필수", "커피 드리면 안 됨 (부정맥)"],
+    careNotes: ["보행 보조기 사용 — 트렁크 적재 필요", "승하차에 시간이 걸림", "커피 드리면 안 됨 (부정맥)"],
     guardian: { name: "정민재", relation: "손자", residence: "서울 관악구" },
     coord: [37.082, 127.881],
   },
@@ -106,7 +106,7 @@ export const ELDERS: Elder[] = [
     ward: "앙성면",
     condition: "혈액투석",
     frequency: "주 3회 (월·수·금)",
-    careNotes: ["투석 전 혈압 체크 결과 매니저 앱에 기록", "멀미 — 앞자리 배정"],
+    careNotes: ["멀미 — 앞자리 배정", "승하차 시 팔 부축 필요"],
     guardian: { name: "윤상혁", relation: "장남", residence: "경기 수원시" },
     coord: [37.119, 127.812],
   },
@@ -117,7 +117,7 @@ export const ELDERS: Elder[] = [
     ward: "노은면",
     condition: "만성질환 진료",
     frequency: "월 2회",
-    careNotes: ["파킨슨 초기 — 서두르게 하지 않기", "진료과 2곳 연속 방문 (신경과→내과)"],
+    careNotes: ["파킨슨 초기 — 서두르게 하지 않기", "진료과 2곳 연속 방문 — 귀가 배차 여유 필요"],
     guardian: { name: "한지원", relation: "장녀", residence: "서울 송파구" },
     coord: [37.052, 127.791],
   },
@@ -184,7 +184,7 @@ export interface VehicleRoute {
   colorVar: "route-1" | "route-2" | "route-3";
   path: LatLng[];
   pickupStart: string; // 첫 픽업 시각
-  manager: string;
+  driver: string; // 운수사 소속 기사 (§1.9 — 동행 인력 없음)
   seats: number; // 차량 정원
   durationMin: number; // 예상 소요(분)
   distanceKm: number; // 예상 거리
@@ -216,7 +216,7 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e1", "e2", "e3"], // 산척·산척·엄정 → 건대
         colorVar: "route-1",
         pickupStart: "08:20",
-        manager: "이수진 매니저",
+        driver: "이수진 기사 (충주교통)",
         seats: 4,
         durationMin: 52,
         distanceKm: 28.4,
@@ -232,7 +232,7 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e4", "e5", "e7"], // 소태·소태·노은 → 의료원
         colorVar: "route-2",
         pickupStart: "08:40",
-        manager: "박지훈 매니저",
+        driver: "박지훈 기사 (충주교통)",
         seats: 4,
         durationMin: 58,
         distanceKm: 33.1,
@@ -248,7 +248,7 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e6", "e8"], // 앙성·앙성 → 건대
         colorVar: "route-3",
         pickupStart: "08:10",
-        manager: "김도현 매니저",
+        driver: "김도현 기사 (한성운수)",
         seats: 4,
         durationMin: 47,
         distanceKm: 30.6,
@@ -270,7 +270,7 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e1", "e3"],
         colorVar: "route-1",
         pickupStart: "08:35",
-        manager: "이수진 매니저",
+        driver: "이수진 기사 (충주교통)",
         seats: 4,
         durationMin: 41,
         distanceKm: 22.0,
@@ -285,7 +285,7 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e4", "e5", "e7"],
         colorVar: "route-2",
         pickupStart: "08:40",
-        manager: "박지훈 매니저",
+        driver: "박지훈 기사 (충주교통)",
         seats: 4,
         durationMin: 58,
         distanceKm: 33.1,
@@ -301,7 +301,7 @@ export const DISPATCH_SCENARIOS: DispatchScenario[] = [
         elderIds: ["e6", "e8"],
         colorVar: "route-3",
         pickupStart: "08:10",
-        manager: "김도현 매니저",
+        driver: "김도현 기사 (한성운수)",
         seats: 4,
         durationMin: 47,
         distanceKm: 30.6,
@@ -321,14 +321,14 @@ export const INTAKE_FEED = [
   { time: "07:44", icon: "phone", text: "전화 접수 — 최복례 어르신 (콜센터 김민지 입력)" },
   { time: "07:58", icon: "phone", text: "전화 접수 — 정갑수 어르신 (콜센터 김민지 입력)" },
   { time: "08:03", icon: "app", text: "자녀 앱 예약 — 한만식 어르신 (보호자 한지원)" },
-  { time: "08:05", icon: "manager", text: "매니저 3명 배정 대기 — 이수진·박지훈·김도현" },
+  { time: "08:05", icon: "vehicle", text: "운수사 차량 3대 배차 확정 — 충주교통 2 · 한성운수 1" },
 ];
 
-/** 매니저 앱에 도착한 오늘 배차 — 수락 전 상태 (PROTOTYPE_PLAN §1.8 3단계) */
-export const MANAGER_ASSIGNMENT = {
+/** 운영 관리자에게 배정된 오늘 업무 (PROTOTYPE_PLAN §1.9) */
+export const OPERATOR_ASSIGNMENT = {
   assignedAt: "오늘 05:00",
   from: "AI 배차 엔진",
-  note: "자동 배차 · 승객 3인 · 건국대충주병원 방면",
+  note: "차량 3대 · 어르신 8명 · 확인 통화 8건",
 };
 
 /** 관제 라이브 피드 — 배차 확정 후 지도 위 티커에 롤링되는 이벤트 (연출) */
@@ -346,8 +346,9 @@ export const LIVE_FEED = [
 /** 단위경제 — 어르신 3인 합승 1회 운행 기준 (사업계획서 §4) */
 export const UNIT_ECONOMICS = {
   revenue: 105_000, // 바우처 3.5만 × 3인
-  cost: 92_000, // 차량 4만 + 매니저 4h × 1.3만
-  margin: 13_000,
+  // §1.9 — 동행 인력 없음. 차량(운수사 위탁) + 관리자 인건비 분산분만 계상
+  cost: 62_000, // 차량 왕복 5.2만 + 관리자 운영비 1.0만 (1인이 하루 수십 건 처리)
+  margin: 43_000,
   soloVehiclesNeeded: 8, // 1:1이면 8대
   pooledVehiclesNeeded: 3, // 합승이면 3대
 };
@@ -362,64 +363,81 @@ export type TripStep = (typeof TRIP_STEPS)[number];
 // 실제 생성 없음 — 타이핑 효과로 출력한다. (PROTOTYPE_PLAN §5.2)
 // 의료행위·소견 없이 처방전·수납증 기반 사실 전달로 한정 (의료법 방어 논리)
 
-export const REPORT_TEXT = `[${TODAY} · 김영자 어르신 진료 동행 리포트]
+export const REPORT_TEXT = `[${TODAY} · 김영자 어르신 통원 리포트]
 
-■ 진료과   건국대충주병원 신장내과
-■ 담당의   신장내과 외래 담당의
-■ 소요시간 09:20 픽업 → 12:40 귀가 (총 3시간 20분)
+■ 병원      건국대충주병원 신장내과
+■ 차량      1호차 · 이수진 기사 (충주교통)
+■ 소요시간  09:20 자택 출발 → 12:40 자택 귀가 (총 3시간 20분)
 
-■ 진행 내용
-혈액투석 정기 치료를 예정대로 받으셨습니다.
-투석 중 특이 반응은 없었고, 종료 후 혈압은 정상 범위였습니다.
+■ 운행 확인 (기사 앱 체크)
+09:20 자택 앞 탑승 · 09:45 병원 정문 하차
+12:30 귀가 차량 배차 · 12:40 자택 앞 귀가 — 안전 귀가 확인 완료
 
-■ 처방 변경
-기존 혈압약 용량이 조정되었습니다. (수납증·처방전 기준)
-약국에서 수령 완료하여 어르신께 전달드렸습니다.
+■ 귀가 확인 통화 (12:45)
+어르신께 직접 통화로 확인했습니다.
+"오늘 잘 받았고, 약도 받아왔어요."
+
+■ 처방 관련 (어르신 전달 내용)
+혈압약 용량이 조정되었다고 하셨습니다.
+약국 수령도 완료하신 것으로 확인했습니다.
+정확한 내용은 처방전을 확인해 주세요.
 
 ■ 다음 예약
 2026년 7월 25일 (토) 오전 9시 30분 — 정기 배차 자동 등록 완료
 
-■ 동행매니저 메모
-오늘은 계단 이용이 어려워 보이셨습니다.
-다음 회차부터 휠체어 동행으로 전환하겠습니다.
+■ 관리자 메모
+계단 오르내리기가 힘드셨다고 하셔서,
+다음 회차는 문 앞 승하차를 기사에게 재안내했습니다.
 
-※ 본 리포트는 처방전·수납증에 기재된 사실을 전달하는 것이며,
-의료적 소견이나 진단을 포함하지 않습니다.`;
+※ 본 리포트는 기사의 승하차 확인 기록과 어르신과의 통화 내용을
+정리한 것이며, 의료적 소견이나 진단을 포함하지 않습니다.`;
 
 /**
  * 오늘 리포트의 구조화 데이터 — /g/report 에서 카드·타임라인으로 렌더링.
  * REPORT_TEXT(원문 문자열)는 /m/trip 타이핑 연출용으로 유지한다.
  */
 export const REPORT_DETAIL = {
-  manager: "이수진 매니저",
+  operator: "김민지 관리자",
+  driver: "이수진 기사",
   hospital: "건국대충주병원 신장내과",
   chips: [
-    { icon: "check", label: "투석 정상 완료" },
+    { icon: "check", label: "안전 귀가 완료" },
     { icon: "pill", label: "처방 변경 있음" },
     { icon: "clock", label: "총 3시간 20분" },
   ],
+  /** 기사 앱 체크(pin) + 관리자 확인 통화(phone) — §1.9 리포트 원천 */
   timeline: [
-    { time: "09:20", label: "자택 픽업", note: "1호차 · 합승 2인과 함께" },
-    { time: "09:41", label: "병원 접수", note: "신장내과 외래" },
-    { time: "10:05", label: "혈액투석", note: "특이 반응 없음 · 종료 후 혈압 정상" },
-    { time: "12:10", label: "수납 · 약국", note: "처방약 수령 완료" },
-    { time: "12:40", label: "자택 귀가", note: "다음 회차 안내드림" },
+    { time: "09:20", label: "자택 앞 탑승", note: "1호차 · 기사 확인", source: "기사 체크" },
+    { time: "09:45", label: "병원 정문 하차", note: "건국대충주병원", source: "기사 체크" },
+    { time: "12:30", label: "귀가 차량 배차", note: "진료 종료 연락 접수", source: "관리자" },
+    { time: "12:40", label: "자택 앞 귀가", note: "기사 확인", source: "기사 체크" },
+    { time: "12:45", label: "귀가 확인 통화", note: "어르신과 직접 통화", source: "관리자" },
   ],
-  prescription: "기존 혈압약 용량이 조정되었습니다 (수납증·처방전 기준). 약국에서 수령해 어르신께 전달드렸습니다.",
-  managerNote: "오늘은 계단 이용이 어려워 보이셨습니다. 다음 회차부터 휠체어 동행으로 전환하겠습니다.",
+  prescription: "기존 혈압약 용량이 조정되었습니다. 어르신이 받아오신 처방전·수납증 기준이며, 약국 수령도 확인했습니다.",
+  operatorNote:
+    "귀가 확인 통화에서 계단 오르내리기가 힘드셨다고 하셨습니다. 다음 회차는 문 앞 승하차를 기사에게 재안내했습니다.",
   next: { date: "7월 25일 (토)", time: "09:30", where: "건국대충주병원 신장내과" },
 };
 
-/** 이번 달 동행 요약 — /g/report 하단 통계 */
+/** 이번 달 통원 요약 — /guardian/report 하단 통계 */
 export const MONTHLY_CARE = [
-  { value: "12회", label: "이번 달 동행" },
+  { value: "12회", label: "이번 달 통원" },
   { value: "12/12", label: "정기 일정 완료" },
   { value: "3시간 5분", label: "평균 소요" },
 ];
 
-/** 매니저 음성 메모 원문 — 녹음 연출 후 "이 말을 AI가 아래처럼 정리했다"는 대비를 보여주는 용도 */
-export const VOICE_MEMO_PREVIEW =
-  "어… 김영자 어르신 투석 잘 받으셨고요, 끝나고 혈압도 괜찮았어요. 혈압약이 좀 바뀌었다고 하셔서 약국에서 받아서 드렸습니다. 아 그리고 오늘 계단 오르실 때 많이 힘들어하셔서, 다음부터는 휠체어 챙기는 게 좋을 것 같아요.";
+/**
+ * 귀가 확인 통화 녹취 — 관리자가 어르신과 나눈 대화. (§1.9 리포트 원천)
+ * "이 통화를 AI가 아래처럼 정리했다"는 대비를 보여주는 용도.
+ */
+export const CALL_TRANSCRIPT = [
+  { who: "관리자" as const, text: "어머님, 오늘 진료 잘 받으셨어요?" },
+  { who: "어르신" as const, text: "응 잘 받았어요. 약도 받아왔고." },
+  { who: "관리자" as const, text: "혈압약이 바뀌었다고 들었는데 맞으세요?" },
+  { who: "어르신" as const, text: "그렇대. 용량을 좀 줄인다고 하더라고." },
+  { who: "관리자" as const, text: "불편하신 데는 없으셨어요?" },
+  { who: "어르신" as const, text: "계단 오르내리는 게 좀 힘들었어. 다리가 후들거려서." },
+];
 
 // ───────────────────────────── 자녀 채널 — 실시간 추적 ─────────────────────────────
 //
@@ -442,16 +460,49 @@ export const TRACK = {
     { label: "병원 도착", fromIndex: 7 },
   ] satisfies TrackPhase[],
   vehicle: "1호차",
-  manager: "이수진 매니저",
+  driver: "이수진 기사",
+  operator: "김민지 관리자",
   etaText: "09:12 병원 도착 예정",
 };
 
-// ───────────────────────────── 매니저 채널 — 오늘 운행 ─────────────────────────────
+// ───────────────────────────── 운영 관리자 채널 (§1.9) ─────────────────────────────
+//
+// 관리자는 사무실에서 일한다. 차에 타지 않고 병원에도 가지 않는다.
+// 하루 업무: 예약 확인 콜 → 출발 알림 → 기사 체크 수신 → 귀가 확인 콜 → 리포트 발송.
 
-/** 관제 → 매니저 공지 (연출) */
-export const MANAGER_NOTICES = [
-  { time: "07:55", icon: "cone", text: "산척면 19번 국도 부분 공사 — 엄정면 방면 우회 권장" },
-  { time: "08:02", icon: "phone", text: "김영자 어르신 보호자 요청: 픽업 시 현관 벨 대신 전화 주세요" },
+/** 관리자 오늘 업무 큐 — 통화·확인 중심 */
+export type TaskKind = "call" | "check" | "report" | "cs";
+export interface OperatorTask {
+  id: string;
+  time: string;
+  kind: TaskKind;
+  title: string;
+  detail: string;
+  elderId?: string;
+  done: boolean;
+}
+
+export const OPERATOR_TASKS: OperatorTask[] = [
+  { id: "t1", time: "07:40", kind: "call", title: "출발 안내 콜 — 김영자 어르신", detail: "08:20 픽업 · 1호차 이수진 기사", elderId: "e1", done: true },
+  { id: "t2", time: "07:52", kind: "call", title: "출발 안내 콜 — 이말순 어르신", detail: "08:50 픽업 · 1호차", elderId: "e3", done: true },
+  { id: "t3", time: "09:22", kind: "check", title: "탑승 확인 — 1호차 3인", detail: "기사 앱 체크 수신 · 전원 탑승", done: true },
+  { id: "t4", time: "09:47", kind: "check", title: "병원 도착 확인 — 1호차", detail: "건국대충주병원 정문 하차", done: true },
+  { id: "t5", time: "12:30", kind: "call", title: "귀가 확인 콜 — 김영자 어르신", detail: "진료 종료 · 귀가 차량 배차 필요", elderId: "e1", done: false },
+  { id: "t6", time: "12:50", kind: "report", title: "리포트 발송 — 김성호 님", detail: "통화·기사 체크 정리 후 자녀 앱 전송", elderId: "e1", done: false },
+  { id: "t7", time: "13:10", kind: "cs", title: "보호자 문의 — 박미영 님", detail: "다음 주 수요일 일정 변경 요청", elderId: "e2", done: false },
+];
+
+/** 관리자 오늘 처리량 — 1인이 감당하는 규모를 보여주는 지표 (§1.9) */
+export const OPERATOR_STATS = [
+  { value: "8명", label: "담당 어르신" },
+  { value: "3대", label: "관제 차량" },
+  { value: "16건", label: "오늘 통화" },
+];
+
+/** 관제·현장 알림 (연출) */
+export const OPERATOR_NOTICES = [
+  { time: "07:55", icon: "cone", text: "산척면 19번 국도 부분 공사 — 기사 3인에게 우회 안내 완료" },
+  { time: "08:02", icon: "phone", text: "김영자 어르신 보호자 요청: 픽업 시 현관 벨 대신 전화" },
 ];
 
 // ───────────────────────────── 자녀 채널 — 정기 일정·멤버십 ─────────────────────────────
@@ -508,7 +559,7 @@ export const DASHBOARD = {
   /** 사회적 성과 — B2G 심사 포인트 */
   social: [
     { icon: "hospital", value: "12명", label: "치료 중단 위기 어르신의 통원 재개", sub: "투석 7 · 재활 5" },
-    { icon: "manager", value: "10명", label: "지역 일자리 창출 (동행매니저)", sub: "청년 6 · 경력단절여성 4" },
+    { icon: "manager", value: "8명", label: "지역 일자리 (관리자·기사)", sub: "운영 관리자 2 · 협력 운수사 기사 6" },
     { icon: "message", value: "4.8점", label: "보호자 만족도 (5점 만점)", sub: "리포트 수신 자녀 설문" },
   ],
   /** 월별 운행 추이 */

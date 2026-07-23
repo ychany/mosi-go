@@ -25,7 +25,9 @@ export {
   Tablets,
   Activity,
   // 커뮤니케이션·기록
+  Headset,
   Phone,
+  PhoneCall,
   Smartphone,
   ClipboardList,
   FileText,

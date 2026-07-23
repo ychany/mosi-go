@@ -65,8 +65,8 @@ export default function GuardianHome() {
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 bg-primary-light rounded-xl grid place-items-center text-primary-dark"><Stethoscope size={22} /></div>
           <div>
-            <p className="text-[15px] font-bold">{TRACK.manager}</p>
-            <p className="text-xs text-sub mt-0.5">{TRACK.vehicle} · 3인 합승 운행</p>
+            <p className="text-[15px] font-bold">{TRACK.driver}</p>
+            <p className="text-xs text-sub mt-0.5">{TRACK.vehicle} · 3인 합승 · 관제 {TRACK.operator}</p>
           </div>
         </div>
         <span

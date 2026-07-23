@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import NaverMap, { type MapMarker, type MapPolyline } from "@/components/NaverMap";
 import {
+  BusFront,
   Check,
   Clock,
   Hourglass,
@@ -10,7 +11,6 @@ import {
   MARKER_HOSPITAL,
   MARKER_VEHICLE,
   RotateCcw,
-  Stethoscope,
   UserRound,
 } from "@/components/icons";
 import {
@@ -78,14 +78,14 @@ function KpiStrip({ phase, vehicleCount }: { phase: Phase; vehicleCount: number 
     },
     {
       label: "운행당 마진",
-      value: live ? "+1.3만" : "—",
+      value: live ? "+4.3만" : "—",
       sub: live ? "3인 합승 기준" : "산출 중",
       highlight: live,
     },
     {
-      label: "매니저 수락",
+      label: "기사 확인",
       value: live ? "3 / 3" : "—",
-      sub: live ? "전원 수락 · 운행 중" : "확인 중",
+      sub: live ? "전원 배차 수락 · 운행 중" : "확인 중",
       highlight: live,
     },
   ];
@@ -196,8 +196,8 @@ function EconomicsCard({ vehicleCount }: { vehicleCount: number }) {
         </div>
       </div>
       <p className="tnum text-[13px] text-sub border-t border-line pt-2.5">
-        운행당 수입 10.5만 − 비용 9.2만 = <b className="text-primary-dark">+1.3만 원</b>
-        <span className="text-[11px]"> · 자녀 구독 매출은 순증</span>
+        운행당 수입 10.5만 − 비용 6.2만 = <b className="text-primary-dark">+4.3만 원</b>
+        <span className="text-[11px]"> · 동행 인력 없이 운수사 위탁 (§1.9)</span>
       </p>
     </div>
   );
@@ -350,8 +350,8 @@ export default function AdminPage() {
                     </ul>
                     <footer className="flex items-center gap-3 px-4 py-2.5 bg-bg text-[11px] text-sub">
                       <span className="flex items-center gap-1">
-                        <Stethoscope size={13} />
-                        {v.manager}
+                        <BusFront size={13} />
+                        {v.driver}
                       </span>
                       <span className="tnum flex items-center gap-1">
                         <Clock size={13} />
@@ -406,10 +406,10 @@ export default function AdminPage() {
                 <div className="rounded-2xl bg-primary-light px-4 py-3">
                   <p className="text-[13px] font-bold text-primary-dark flex items-center gap-1.5">
                     <Check size={15} strokeWidth={3} />
-                    매니저 3명 전원 수락 · 운행 중
+                    차량 3대 배차 완료 · 운행 중
                   </p>
                   <p className="text-[11px] text-sub mt-0.5">
-                    이수진 · 박지훈 · 김도현 — {AUTO_DISPATCH_AT} 자동 배차·발송
+                    충주교통 2대 · 한성운수 1대 — {AUTO_DISPATCH_AT} 자동 배차
                   </p>
                 </div>
                 <button
