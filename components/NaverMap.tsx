@@ -54,20 +54,52 @@ interface Props {
 
 const KEY = process.env.NEXT_PUBLIC_NCP_KEY_ID;
 
-/** 스크립트는 앱 전체에서 한 번만 로드한다 */
+/**
+ * 스크립트는 앱 전체에서 한 번만 로드한다.
+ *
+ * 네이버 클라우드 애플리케이션 세대에 따라 인증 파라미터가 다르다:
+ * - 구형 (AI·NAVER API, Client ID 라벨이 X-NCP-APIGW-API-KEY-ID): ncpClientId
+ * - 신형 (Maps 신규 콘솔): ncpKeyId
+ * 구형을 먼저 시도하고, 인증 실패 콜백(navermap_authFailure)이 오면 신형으로 재시도한다.
+ */
 let scriptPromise: Promise<boolean> | null = null;
+
+function tryLoad(param: "ncpClientId" | "ncpKeyId"): Promise<boolean> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = (ok: boolean) => {
+      if (!settled) {
+        settled = true;
+        resolve(ok);
+      }
+    };
+    // 인증 실패 시 네이버가 호출하는 전역 훅
+    (window as unknown as { navermap_authFailure?: () => void }).navermap_authFailure = () => {
+      console.warn(`[NaverMap] ${param} 인증 실패`);
+      done(false);
+    };
+    const s = document.createElement("script");
+    s.dataset.naverParam = param;
+    s.src = `https://oapi.map.naver.com/openapi/v3/maps.js?${param}=${KEY}`;
+    // 인증 실패 콜백은 로드 직후 비동기로 올 수 있어 잠깐 기다린 뒤 판정
+    s.onload = () => setTimeout(() => done(!!window.naver?.maps), 400);
+    s.onerror = () => done(false); // 오프라인 등 — 플레이스홀더로 degradation
+    document.head.appendChild(s);
+  });
+}
+
 function loadScript(): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
   if (window.naver?.maps) return Promise.resolve(true);
   if (!KEY) return Promise.resolve(false);
   if (!scriptPromise) {
-    scriptPromise = new Promise((resolve) => {
-      const s = document.createElement("script");
-      s.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${KEY}`;
-      s.onload = () => resolve(!!window.naver?.maps);
-      s.onerror = () => resolve(false); // 오프라인 등 — 플레이스홀더로 degradation
-      document.head.appendChild(s);
-    });
+    scriptPromise = (async () => {
+      if (await tryLoad("ncpClientId")) return true;
+      // 실패한 스크립트·전역을 정리하고 신형 파라미터로 재시도
+      document.querySelectorAll("script[data-naver-param]").forEach((el) => el.remove());
+      delete (window as { naver?: unknown }).naver;
+      return tryLoad("ncpKeyId");
+    })();
   }
   return scriptPromise;
 }
